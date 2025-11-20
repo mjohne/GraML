@@ -39,6 +39,8 @@
 			columnHeaderValue = new ColumnHeader();
 			backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			progressBar = new ProgressBar();
+			labelProgressPercent = new Label();
+			labelNgramLength = new Label();
 			labelProgress = new Label();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			SuspendLayout();
@@ -66,7 +68,7 @@
 			listViewNgram.MultiSelect = false;
 			listViewNgram.Name = "listViewNgram";
 			listViewNgram.ShowItemToolTips = true;
-			listViewNgram.Size = new Size(315, 208);
+			listViewNgram.Size = new Size(169, 208);
 			listViewNgram.TabIndex = 1;
 			listViewNgram.UseCompatibleStateImageBehavior = false;
 			listViewNgram.View = View.Details;
@@ -74,30 +76,31 @@
 			// columnHeaderToken
 			// 
 			columnHeaderToken.Text = "Token";
-			columnHeaderToken.Width = 200;
+			columnHeaderToken.Width = 70;
 			// 
 			// columnHeaderFrequency
 			// 
 			columnHeaderFrequency.Text = "Frequency";
-			columnHeaderFrequency.Width = 100;
+			columnHeaderFrequency.Width = 70;
 			// 
 			// numericUpDownNGram
 			// 
-			numericUpDownNGram.Location = new Point(152, 12);
+			numericUpDownNGram.Location = new Point(243, 12);
 			numericUpDownNGram.Name = "numericUpDownNGram";
-			numericUpDownNGram.Size = new Size(96, 23);
+			numericUpDownNGram.Size = new Size(51, 23);
 			numericUpDownNGram.TabIndex = 2;
+			numericUpDownNGram.TextAlign = HorizontalAlignment.Center;
 			numericUpDownNGram.Value = new decimal(new int[] { 3, 0, 0, 0 });
 			// 
 			// listViewProperties
 			// 
 			listViewProperties.Columns.AddRange(new ColumnHeader[] { columnHeaderProperty, columnHeaderValue });
 			listViewProperties.FullRowSelect = true;
-			listViewProperties.Location = new Point(333, 41);
+			listViewProperties.Location = new Point(187, 41);
 			listViewProperties.MultiSelect = false;
 			listViewProperties.Name = "listViewProperties";
 			listViewProperties.ShowItemToolTips = true;
-			listViewProperties.Size = new Size(315, 208);
+			listViewProperties.Size = new Size(461, 208);
 			listViewProperties.TabIndex = 3;
 			listViewProperties.UseCompatibleStateImageBehavior = false;
 			listViewProperties.View = View.Details;
@@ -105,12 +108,12 @@
 			// columnHeaderProperty
 			// 
 			columnHeaderProperty.Text = "Properties";
-			columnHeaderProperty.Width = 200;
+			columnHeaderProperty.Width = 300;
 			// 
 			// columnHeaderValue
 			// 
 			columnHeaderValue.Text = "Values";
-			columnHeaderValue.Width = 100;
+			columnHeaderValue.Width = 150;
 			// 
 			// backgroundWorker
 			// 
@@ -122,21 +125,39 @@
 			// 
 			// progressBar
 			// 
-			progressBar.Location = new Point(333, 12);
+			progressBar.Location = new Point(394, 12);
 			progressBar.Name = "progressBar";
 			progressBar.Size = new Size(100, 23);
 			progressBar.Step = 1;
 			progressBar.Style = ProgressBarStyle.Continuous;
 			progressBar.TabIndex = 4;
 			// 
+			// labelProgressPercent
+			// 
+			labelProgressPercent.AutoSize = true;
+			labelProgressPercent.Location = new Point(500, 16);
+			labelProgressPercent.Name = "labelProgressPercent";
+			labelProgressPercent.Size = new Size(17, 15);
+			labelProgressPercent.TabIndex = 5;
+			labelProgressPercent.Text = "%";
+			// 
+			// labelNgramLength
+			// 
+			labelNgramLength.AutoSize = true;
+			labelNgramLength.Location = new Point(150, 16);
+			labelNgramLength.Name = "labelNgramLength";
+			labelNgramLength.Size = new Size(87, 15);
+			labelNgramLength.TabIndex = 6;
+			labelNgramLength.Text = "n-gram length:";
+			// 
 			// labelProgress
 			// 
 			labelProgress.AutoSize = true;
-			labelProgress.Location = new Point(439, 16);
+			labelProgress.Location = new Point(333, 16);
 			labelProgress.Name = "labelProgress";
-			labelProgress.Size = new Size(17, 15);
-			labelProgress.TabIndex = 5;
-			labelProgress.Text = "%";
+			labelProgress.Size = new Size(55, 15);
+			labelProgress.TabIndex = 7;
+			labelProgress.Text = "Progress:";
 			// 
 			// MainForm
 			// 
@@ -144,6 +165,8 @@
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(665, 263);
 			Controls.Add(labelProgress);
+			Controls.Add(labelNgramLength);
+			Controls.Add(labelProgressPercent);
 			Controls.Add(progressBar);
 			Controls.Add(listViewProperties);
 			Controls.Add(numericUpDownNGram);
@@ -171,6 +194,8 @@
 		private ColumnHeader columnHeaderValue;
 		private System.ComponentModel.BackgroundWorker backgroundWorker;
 		private ProgressBar progressBar;
+		private Label labelProgressPercent;
+		private Label labelNgramLength;
 		private Label labelProgress;
 	}
 }

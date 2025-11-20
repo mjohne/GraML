@@ -124,7 +124,7 @@ namespace GraML
 			ReadOnlySpan<char> textSpan = fileContent.AsSpan();
 
 			// CPU-intensive Arbeit im Hintergrund
-			Dictionary<string, int> ngramCounts = CountNgrams(text: textSpan, n: n, progressBar: progressBar, backgroundWorker: backgroundWorker, labelProgress: labelProgress);
+			Dictionary<string, int> ngramCounts = CountNgrams(text: textSpan, n: n, progressBar: progressBar, backgroundWorker: backgroundWorker, labelProgress: labelProgressPercent);
 
 			// Ergebnis an den UI-Thread zurückgeben
 			e.Result = (ngramCounts, n);
