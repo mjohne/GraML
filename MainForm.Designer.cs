@@ -42,6 +42,8 @@
 			labelProgressPercent = new Label();
 			labelNgramLength = new Label();
 			labelProgress = new Label();
+			textBox1 = new TextBox();
+			buttonCreateModelText = new Button();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			SuspendLayout();
 			// 
@@ -69,7 +71,7 @@
 			listViewNgram.Name = "listViewNgram";
 			listViewNgram.ShowItemToolTips = true;
 			listViewNgram.Size = new Size(169, 208);
-			listViewNgram.TabIndex = 1;
+			listViewNgram.TabIndex = 6;
 			listViewNgram.UseCompatibleStateImageBehavior = false;
 			listViewNgram.View = View.Details;
 			// 
@@ -100,8 +102,8 @@
 			listViewProperties.MultiSelect = false;
 			listViewProperties.Name = "listViewProperties";
 			listViewProperties.ShowItemToolTips = true;
-			listViewProperties.Size = new Size(461, 208);
-			listViewProperties.TabIndex = 3;
+			listViewProperties.Size = new Size(466, 208);
+			listViewProperties.TabIndex = 7;
 			listViewProperties.UseCompatibleStateImageBehavior = false;
 			listViewProperties.View = View.Details;
 			// 
@@ -147,7 +149,7 @@
 			labelNgramLength.Location = new Point(150, 16);
 			labelNgramLength.Name = "labelNgramLength";
 			labelNgramLength.Size = new Size(87, 15);
-			labelNgramLength.TabIndex = 6;
+			labelNgramLength.TabIndex = 1;
 			labelNgramLength.Text = "n-gram length:";
 			// 
 			// labelProgress
@@ -156,14 +158,34 @@
 			labelProgress.Location = new Point(333, 16);
 			labelProgress.Name = "labelProgress";
 			labelProgress.Size = new Size(55, 15);
-			labelProgress.TabIndex = 7;
+			labelProgress.TabIndex = 3;
 			labelProgress.Text = "Progress:";
+			// 
+			// textBox1
+			// 
+			textBox1.Location = new Point(187, 255);
+			textBox1.Multiline = true;
+			textBox1.Name = "textBox1";
+			textBox1.Size = new Size(466, 243);
+			textBox1.TabIndex = 9;
+			// 
+			// buttonCreateModelText
+			// 
+			buttonCreateModelText.Location = new Point(12, 475);
+			buttonCreateModelText.Name = "buttonCreateModelText";
+			buttonCreateModelText.Size = new Size(169, 23);
+			buttonCreateModelText.TabIndex = 8;
+			buttonCreateModelText.Text = "Create model text";
+			buttonCreateModelText.UseVisualStyleBackColor = true;
+			buttonCreateModelText.Click += ButtonCreateModelText_Click;
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(665, 263);
+			ClientSize = new Size(665, 510);
+			Controls.Add(buttonCreateModelText);
+			Controls.Add(textBox1);
 			Controls.Add(labelProgress);
 			Controls.Add(labelNgramLength);
 			Controls.Add(labelProgressPercent);
@@ -197,5 +219,7 @@
 		private Label labelProgressPercent;
 		private Label labelNgramLength;
 		private Label labelProgress;
+		private TextBox textBox1;
+		private Button buttonCreateModelText;
 	}
 }

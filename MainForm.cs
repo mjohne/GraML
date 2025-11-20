@@ -169,5 +169,9 @@ namespace GraML
 		{
 			progressBar.PerformStep();
 		}
+
+		private void ButtonCreateModelText_Click(object sender, EventArgs e)
+		{
+		}
 	}
 }
