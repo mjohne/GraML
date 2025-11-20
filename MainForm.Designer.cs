@@ -39,6 +39,7 @@
 			columnHeaderValue = new ColumnHeader();
 			backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			progressBar = new ProgressBar();
+			labelProgress = new Label();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			SuspendLayout();
 			// 
@@ -124,14 +125,25 @@
 			progressBar.Location = new Point(333, 12);
 			progressBar.Name = "progressBar";
 			progressBar.Size = new Size(100, 23);
+			progressBar.Step = 1;
 			progressBar.Style = ProgressBarStyle.Continuous;
 			progressBar.TabIndex = 4;
+			// 
+			// labelProgress
+			// 
+			labelProgress.AutoSize = true;
+			labelProgress.Location = new Point(439, 16);
+			labelProgress.Name = "labelProgress";
+			labelProgress.Size = new Size(17, 15);
+			labelProgress.TabIndex = 5;
+			labelProgress.Text = "%";
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(665, 263);
+			Controls.Add(labelProgress);
 			Controls.Add(progressBar);
 			Controls.Add(listViewProperties);
 			Controls.Add(numericUpDownNGram);
@@ -143,6 +155,7 @@
 			Text = "GraML";
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).EndInit();
 			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion
@@ -158,5 +171,6 @@
 		private ColumnHeader columnHeaderValue;
 		private System.ComponentModel.BackgroundWorker backgroundWorker;
 		private ProgressBar progressBar;
+		private Label labelProgress;
 	}
 }
