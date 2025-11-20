@@ -101,12 +101,12 @@
 			// 
 			// columnHeaderProperty
 			// 
-			columnHeaderProperty.Text = "Token";
+			columnHeaderProperty.Text = "Properties";
 			columnHeaderProperty.Width = 200;
 			// 
 			// columnHeaderValue
 			// 
-			columnHeaderValue.Text = "Frequency";
+			columnHeaderValue.Text = "Values";
 			columnHeaderValue.Width = 100;
 			// 
 			// MainForm
