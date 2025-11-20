@@ -2,15 +2,24 @@ namespace GraML
 {
 	public partial class MainForm : Form
 	{
-		// Zählt nur N-Gramme (keine UI-Updates)
-		private static Dictionary<string, int> CountNgrams(List<string> words, int n)
+		// Zählt nur N-Gramme (keine UI-Updates) — performante Variante mit ReadOnlySpan<char>
+		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n)
 		{
-			Dictionary<string, int> dict = [];
-			for (int i = 0; i <= words.Count - n; i++)
+			if (n <= 0 || text.Length < n)
 			{
-				string token = string.Concat(values: words.Skip(count: i).Take(count: n));
-				dict[key: token] = dict.TryGetValue(key: token, value: out int existing) ? existing + 1 : 1;
+				return new Dictionary<string, int>(0, StringComparer.Ordinal);
 			}
+
+			int possible = text.Length - n + 1;
+			var dict = new Dictionary<string, int>(Math.Max(4, possible), StringComparer.Ordinal);
+
+			for (int i = 0; i < possible; i++)
+			{
+				// Neuen String direkt aus Span erstellen (minimaler Overhead, keine LINQ)
+				string token = new(text.Slice(i, n));
+				dict[token] = dict.TryGetValue(token, out int cnt) ? cnt + 1 : 1;
+			}
+
 			return dict;
 		}
 
@@ -89,10 +98,10 @@ namespace GraML
 			{
 				string filePath = openFileDialog.FileName;
 				string fileContent = File.ReadAllText(path: filePath);
-				List<string> words = [.. fileContent.Select(selector: static c => c.ToString())];
+				ReadOnlySpan<char> textSpan = fileContent.AsSpan();
 
 				int n = (int)numericUpDownNGram.Value;
-				Dictionary<string, int> ngramCounts = CountNgrams(words: words, n: n);
+				Dictionary<string, int> ngramCounts = CountNgrams(textSpan, n);
 				listViewNgram.Items.Clear();
 				foreach (KeyValuePair<string, int> kv in ngramCounts)
 				{
