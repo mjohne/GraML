@@ -1,9 +1,11 @@
+using System.ComponentModel;
+
 namespace GraML
 {
 	public partial class MainForm : Form
 	{
 		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
-		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n)
+		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, ProgressBar progressBar, BackgroundWorker backgroundWorker, Label labelProgress)
 		{
 			if (n <= 0 || text.Length < n)
 			{
@@ -11,12 +13,17 @@ namespace GraML
 			}
 
 			int possible = text.Length - n + 1;
-			Dictionary<string, int> dict = new(capacity: Math.Max(4, possible), comparer: StringComparer.Ordinal);
+			Dictionary<string, int> dict = new(capacity: Math.Max(val1: 4, val2: possible), comparer: StringComparer.Ordinal);
+
+			progressBar.Maximum = possible;
+			MessageBox.Show(text: $"Calculating {n}-grams. Total possible n-grams: {possible}", caption: "Info", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
 
 			for (int i = 0; i < possible; i++)
 			{
 				string token = new(value: text.Slice(start: i, length: n));
 				dict[key: token] = dict.TryGetValue(key: token, value: out int cnt) ? cnt + 1 : 1;
+				backgroundWorker.ReportProgress(percentProgress: i * 100 / possible);
+				labelProgress.Text = $"{i * 100 / possible} %";
 			}
 
 			return dict;
@@ -25,7 +32,6 @@ namespace GraML
 		// Kümmert sich ausschließlich um die UI-Anzeige der berechneten Kennzahlen
 		private void UpdateNgramProperties(Dictionary<string, int> dict, int n)
 		{
-			listViewProperties.Items.Clear();
 			if (dict == null || dict.Count == 0)
 			{
 				AddProperty(name: "n-gram size", value: $"{n}");
@@ -69,8 +75,6 @@ namespace GraML
 			AddProperty(name: "Entropy of n-gram distribution", value: $"{entropy:F4}");
 			AddProperty(name: "Gini coefficient of n-gram distribution", value: $"{gini:F4}");
 			AddProperty(name: "Average length of n-grams", value: $"{dict.Keys.Average(selector: k => k.Length):F2}");
-			AddProperty(name: "Longest n-gram", value: $"{dict.Keys.OrderByDescending(keySelector: k => k.Length).First()} (Length: {dict.Keys.Max(selector: k => k.Length)})");
-			AddProperty(name: "Shortest n-gram", value: $"{dict.Keys.OrderBy(keySelector: k => k.Length).First()} (Length: {dict.Keys.Min(selector: k => k.Length)})");
 			AddProperty(name: "Hapax Legomena (occurring once)", value: $"{dict.Values.Count(predicate: v => v == 1)}");
 			AddProperty(name: "Dis Legomena (occurring twice)", value: $"{dict.Values.Count(predicate: v => v == 2)}");
 			AddProperty(name: "Ratio of Hapax Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 1) / (double)total:F4}");
@@ -97,33 +101,73 @@ namespace GraML
 			{
 				string filePath = openFileDialog.FileName;
 				string fileContent = File.ReadAllText(path: filePath);
-				ReadOnlySpan<char> textSpan = fileContent.AsSpan();
-
 				int n = (int)numericUpDownNGram.Value;
-				Dictionary<string, int> ngramCounts = CountNgrams(textSpan, n);
 				listViewNgram.Items.Clear();
-				foreach (KeyValuePair<string, int> kv in ngramCounts)
-				{
-					ListViewItem item = new(text: kv.Key);
-					item.SubItems.Add(text: $"{kv.Value}");
-					listViewNgram.Items.Add(value: item);
-				}
+				listViewProperties.Items.Clear();
+				progressBar.Value = 0;
 
-				// UI-Update getrennt von der Zähl-Logik
-				UpdateNgramProperties(dict: ngramCounts, n: n);
+				// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
+				backgroundWorker.RunWorkerAsync(argument: (fileContent, n));
 			}
 		}
 
-		private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
+			// Nur Hintergrundarbeit: Parsen der Argumente und Zähl-Logik ausführen
+			if (e.Argument is not ValueTuple<string, int> args)
+			{
+				e.Result = null;
+				return;
+			}
+
+			(string fileContent, int n) = args;
+			ReadOnlySpan<char> textSpan = fileContent.AsSpan();
+
+			// CPU-intensive Arbeit im Hintergrund
+			Dictionary<string, int> ngramCounts = CountNgrams(text: textSpan, n: n, progressBar: progressBar, backgroundWorker: backgroundWorker, labelProgress: labelProgress);
+
+			// Ergebnis an den UI-Thread zurückgeben
+			e.Result = (ngramCounts, n);
 		}
 
-		private void BackgroundWorker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
+			// Fehlerbehandlung
+			if (e.Error != null)
+			{
+				MessageBox.Show(text: e.Error.Message, caption: "Fehler", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
+				return;
+			}
+
+			if (e.Cancelled)
+			{
+				// ggf. Abbruch-Handling
+				return;
+			}
+
+			if (e.Result is not ValueTuple<Dictionary<string, int>, int> result || result.Item1 == null)
+			{
+				return;
+			}
+
+			Dictionary<string, int> ngramCounts = result.Item1;
+			int n = result.Item2;
+
+			// UI-Updates auf dem UI-Thread
+			foreach (KeyValuePair<string, int> kv in ngramCounts)
+			{
+				ListViewItem item = new(text: kv.Key);
+				item.SubItems.Add(text: $"{kv.Value}");
+				listViewNgram.Items.Add(value: item);
+			}
+
+			// UI-Übersicht aktualisieren
+			UpdateNgramProperties(dict: ngramCounts, n: n);
 		}
 
-		private void BackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
+			progressBar.PerformStep();
 		}
 	}
 }
