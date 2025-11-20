@@ -2,22 +2,21 @@ namespace GraML
 {
 	public partial class MainForm : Form
 	{
-		// Zählt nur N-Gramme (keine UI-Updates) — performante Variante mit ReadOnlySpan<char>
+		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
 		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n)
 		{
 			if (n <= 0 || text.Length < n)
 			{
-				return new Dictionary<string, int>(0, StringComparer.Ordinal);
+				return new Dictionary<string, int>(capacity: 0, comparer: StringComparer.Ordinal);
 			}
 
 			int possible = text.Length - n + 1;
-			var dict = new Dictionary<string, int>(Math.Max(4, possible), StringComparer.Ordinal);
+			Dictionary<string, int> dict = new(capacity: Math.Max(4, possible), comparer: StringComparer.Ordinal);
 
 			for (int i = 0; i < possible; i++)
 			{
-				// Neuen String direkt aus Span erstellen (minimaler Overhead, keine LINQ)
-				string token = new(text.Slice(i, n));
-				dict[token] = dict.TryGetValue(token, out int cnt) ? cnt + 1 : 1;
+				string token = new(value: text.Slice(start: i, length: n));
+				dict[key: token] = dict.TryGetValue(key: token, value: out int cnt) ? cnt + 1 : 1;
 			}
 
 			return dict;
@@ -45,7 +44,7 @@ namespace GraML
 			KeyValuePair<string, int> most = dict.MaxBy(keySelector: kv => kv.Value);
 			KeyValuePair<string, int> least = dict.MinBy(keySelector: kv => kv.Value);
 
-			double[] probs = [.. dict.Values.Select(v => (double)v / total)];
+			double[] probs = [.. dict.Values.Select(selector: v => (double)v / total)];
 			double entropy = -probs.Where(predicate: p => p > 0).Sum(selector: p => p * Math.Log2(x: p));
 			double gini = 1 - probs.Sum(selector: p => p * p);
 
@@ -113,6 +112,18 @@ namespace GraML
 				// UI-Update getrennt von der Zähl-Logik
 				UpdateNgramProperties(dict: ngramCounts, n: n);
 			}
+		}
+
+		private void BackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+		{
+		}
+
+		private void BackgroundWorker_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+		{
+		}
+
+		private void BackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		{
 		}
 	}
 }

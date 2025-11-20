@@ -37,6 +37,8 @@
 			listViewProperties = new ListView();
 			columnHeaderProperty = new ColumnHeader();
 			columnHeaderValue = new ColumnHeader();
+			backgroundWorker = new System.ComponentModel.BackgroundWorker();
+			progressBar = new ProgressBar();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			SuspendLayout();
 			// 
@@ -109,11 +111,28 @@
 			columnHeaderValue.Text = "Values";
 			columnHeaderValue.Width = 100;
 			// 
+			// backgroundWorker
+			// 
+			backgroundWorker.WorkerReportsProgress = true;
+			backgroundWorker.WorkerSupportsCancellation = true;
+			backgroundWorker.DoWork += BackgroundWorker_DoWork;
+			backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
+			backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+			// 
+			// progressBar
+			// 
+			progressBar.Location = new Point(333, 12);
+			progressBar.Name = "progressBar";
+			progressBar.Size = new Size(100, 23);
+			progressBar.Style = ProgressBarStyle.Continuous;
+			progressBar.TabIndex = 4;
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(665, 263);
+			Controls.Add(progressBar);
 			Controls.Add(listViewProperties);
 			Controls.Add(numericUpDownNGram);
 			Controls.Add(listViewNgram);
@@ -137,5 +156,7 @@
 		private ListView listViewProperties;
 		private ColumnHeader columnHeaderProperty;
 		private ColumnHeader columnHeaderValue;
+		private System.ComponentModel.BackgroundWorker backgroundWorker;
+		private ProgressBar progressBar;
 	}
 }
