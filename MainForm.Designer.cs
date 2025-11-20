@@ -30,16 +30,19 @@
 		{
 			buttonOpenTextFile = new Button();
 			openFileDialog = new OpenFileDialog();
-			listView = new ListView();
+			listViewNgram = new ListView();
 			columnHeaderToken = new ColumnHeader();
 			columnHeaderFrequency = new ColumnHeader();
 			numericUpDownNGram = new NumericUpDown();
+			listViewProperties = new ListView();
+			columnHeaderProperty = new ColumnHeader();
+			columnHeaderValue = new ColumnHeader();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			SuspendLayout();
 			// 
 			// buttonOpenTextFile
 			// 
-			buttonOpenTextFile.Location = new Point(68, 43);
+			buttonOpenTextFile.Location = new Point(12, 12);
 			buttonOpenTextFile.Name = "buttonOpenTextFile";
 			buttonOpenTextFile.Size = new Size(115, 23);
 			buttonOpenTextFile.TabIndex = 0;
@@ -52,18 +55,18 @@
 			openFileDialog.DefaultExt = "*.txt";
 			openFileDialog.OkRequiresInteraction = true;
 			// 
-			// listView
+			// listViewNgram
 			// 
-			listView.Columns.AddRange(new ColumnHeader[] { columnHeaderToken, columnHeaderFrequency });
-			listView.FullRowSelect = true;
-			listView.Location = new Point(68, 82);
-			listView.MultiSelect = false;
-			listView.Name = "listView";
-			listView.ShowItemToolTips = true;
-			listView.Size = new Size(326, 208);
-			listView.TabIndex = 1;
-			listView.UseCompatibleStateImageBehavior = false;
-			listView.View = View.Details;
+			listViewNgram.Columns.AddRange(new ColumnHeader[] { columnHeaderToken, columnHeaderFrequency });
+			listViewNgram.FullRowSelect = true;
+			listViewNgram.Location = new Point(12, 41);
+			listViewNgram.MultiSelect = false;
+			listViewNgram.Name = "listViewNgram";
+			listViewNgram.ShowItemToolTips = true;
+			listViewNgram.Size = new Size(315, 208);
+			listViewNgram.TabIndex = 1;
+			listViewNgram.UseCompatibleStateImageBehavior = false;
+			listViewNgram.View = View.Details;
 			// 
 			// columnHeaderToken
 			// 
@@ -77,18 +80,43 @@
 			// 
 			// numericUpDownNGram
 			// 
-			numericUpDownNGram.Location = new Point(208, 43);
+			numericUpDownNGram.Location = new Point(152, 12);
 			numericUpDownNGram.Name = "numericUpDownNGram";
 			numericUpDownNGram.Size = new Size(96, 23);
 			numericUpDownNGram.TabIndex = 2;
+			numericUpDownNGram.Value = new decimal(new int[] { 3, 0, 0, 0 });
+			// 
+			// listViewProperties
+			// 
+			listViewProperties.Columns.AddRange(new ColumnHeader[] { columnHeaderProperty, columnHeaderValue });
+			listViewProperties.FullRowSelect = true;
+			listViewProperties.Location = new Point(333, 41);
+			listViewProperties.MultiSelect = false;
+			listViewProperties.Name = "listViewProperties";
+			listViewProperties.ShowItemToolTips = true;
+			listViewProperties.Size = new Size(315, 208);
+			listViewProperties.TabIndex = 3;
+			listViewProperties.UseCompatibleStateImageBehavior = false;
+			listViewProperties.View = View.Details;
+			// 
+			// columnHeaderProperty
+			// 
+			columnHeaderProperty.Text = "Token";
+			columnHeaderProperty.Width = 200;
+			// 
+			// columnHeaderValue
+			// 
+			columnHeaderValue.Text = "Frequency";
+			columnHeaderValue.Width = 100;
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(538, 402);
+			ClientSize = new Size(665, 263);
+			Controls.Add(listViewProperties);
 			Controls.Add(numericUpDownNGram);
-			Controls.Add(listView);
+			Controls.Add(listViewNgram);
 			Controls.Add(buttonOpenTextFile);
 			FormBorderStyle = FormBorderStyle.FixedSingle;
 			Name = "MainForm";
@@ -102,9 +130,12 @@
 
 		private Button buttonOpenTextFile;
 		private OpenFileDialog openFileDialog;
-		private ListView listView;
+		private ListView listViewNgram;
 		private ColumnHeader columnHeaderToken;
 		private ColumnHeader columnHeaderFrequency;
 		private NumericUpDown numericUpDownNGram;
+		private ListView listViewProperties;
+		private ColumnHeader columnHeaderProperty;
+		private ColumnHeader columnHeaderValue;
 	}
 }
