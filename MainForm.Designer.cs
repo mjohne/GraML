@@ -53,10 +53,12 @@
 			buttonRebuild = new Button();
 			groupBoxProgress = new GroupBox();
 			groupBoxTokenFrequency = new GroupBox();
-			buttonSaveAsCsv = new Button();
+			buttonSaveTokenListAsCsv = new Button();
 			groupBoxProperties = new GroupBox();
 			groupBoxModelText = new GroupBox();
 			buttonSaveAsTextFile = new Button();
+			saveFileDialogTokenList = new SaveFileDialog();
+			saveFileDialogModelText = new SaveFileDialog();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			((System.ComponentModel.ISupportInitialize)numericUpDownModelTextLength).BeginInit();
 			groupBoxTextFile.SuspendLayout();
@@ -79,7 +81,8 @@
 			// 
 			// openFileDialog
 			// 
-			openFileDialog.DefaultExt = "*.txt";
+			openFileDialog.DefaultExt = "txt";
+			openFileDialog.Filter = "text files|*.txt|all files|*.*";
 			openFileDialog.OkRequiresInteraction = true;
 			// 
 			// listViewToken
@@ -108,6 +111,7 @@
 			// numericUpDownNGram
 			// 
 			numericUpDownNGram.Location = new Point(99, 15);
+			numericUpDownNGram.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
 			numericUpDownNGram.Name = "numericUpDownNGram";
 			numericUpDownNGram.Size = new Size(51, 23);
 			numericUpDownNGram.TabIndex = 1;
@@ -292,7 +296,7 @@
 			// 
 			// groupBoxTokenFrequency
 			// 
-			groupBoxTokenFrequency.Controls.Add(buttonSaveAsCsv);
+			groupBoxTokenFrequency.Controls.Add(buttonSaveTokenListAsCsv);
 			groupBoxTokenFrequency.Controls.Add(listViewToken);
 			groupBoxTokenFrequency.Location = new Point(12, 128);
 			groupBoxTokenFrequency.Name = "groupBoxTokenFrequency";
@@ -301,14 +305,15 @@
 			groupBoxTokenFrequency.TabStop = false;
 			groupBoxTokenFrequency.Text = "Token Frequency";
 			// 
-			// buttonSaveAsCsv
+			// buttonSaveTokenListAsCsv
 			// 
-			buttonSaveAsCsv.Location = new Point(6, 216);
-			buttonSaveAsCsv.Name = "buttonSaveAsCsv";
-			buttonSaveAsCsv.Size = new Size(163, 23);
-			buttonSaveAsCsv.TabIndex = 1;
-			buttonSaveAsCsv.Text = "Save as CSV";
-			buttonSaveAsCsv.UseVisualStyleBackColor = true;
+			buttonSaveTokenListAsCsv.Location = new Point(6, 216);
+			buttonSaveTokenListAsCsv.Name = "buttonSaveTokenListAsCsv";
+			buttonSaveTokenListAsCsv.Size = new Size(163, 23);
+			buttonSaveTokenListAsCsv.TabIndex = 1;
+			buttonSaveTokenListAsCsv.Text = "Save as CSV";
+			buttonSaveTokenListAsCsv.UseVisualStyleBackColor = true;
+			buttonSaveTokenListAsCsv.Click += ButtonSaveTokenListAsCsv_Click;
 			// 
 			// groupBoxProperties
 			// 
@@ -342,6 +347,19 @@
 			buttonSaveAsTextFile.TabIndex = 3;
 			buttonSaveAsTextFile.Text = "Save as text file";
 			buttonSaveAsTextFile.UseVisualStyleBackColor = true;
+			buttonSaveAsTextFile.Click += ButtonSaveModelText_Click;
+			// 
+			// saveFileDialogTokenList
+			// 
+			saveFileDialogTokenList.DefaultExt = "csv";
+			saveFileDialogTokenList.Filter = "CSV files|*.csv|all files|*.*";
+			saveFileDialogTokenList.OkRequiresInteraction = true;
+			// 
+			// saveFileDialogModelText
+			// 
+			saveFileDialogModelText.DefaultExt = "txt";
+			saveFileDialogModelText.Filter = "text files|*.txt|all files|*.*";
+			saveFileDialogModelText.OkRequiresInteraction = true;
 			// 
 			// MainForm
 			// 
@@ -402,8 +420,10 @@
 		private GroupBox groupBoxTokenFrequency;
 		private GroupBox groupBoxProperties;
 		private Button buttonRebuild;
-		private Button buttonSaveAsCsv;
+		private Button buttonSaveTokenListAsCsv;
 		private GroupBox groupBoxModelText;
 		private Button buttonSaveAsTextFile;
+		private SaveFileDialog saveFileDialogTokenList;
+		private SaveFileDialog saveFileDialogModelText;
 	}
 }
