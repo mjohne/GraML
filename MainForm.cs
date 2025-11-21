@@ -5,6 +5,11 @@ namespace GraML
 {
 	public partial class MainForm : Form
 	{
+		#region Variables
+
+		// Feld zum Speichern der Token als Array für VirtualMode
+		private KeyValuePair<string, int>[] tokenArray = [];
+
 		private Dictionary<string, int>? ngramCounts;
 
 		private int n;
@@ -14,6 +19,10 @@ namespace GraML
 		private string filePath = string.Empty;
 
 		private string fileContent = string.Empty;
+
+		#endregion
+
+		#region Helpers
 
 		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
 		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, BackgroundWorker backgroundWorker)
@@ -104,140 +113,6 @@ namespace GraML
 			ListViewItem item = new(text: name);
 			item.SubItems.Add(text: value);
 			listViewProperties.Items.Add(value: item);
-		}
-
-		public MainForm()
-		{
-			InitializeComponent();
-		}
-
-		private void ButtonSelectTextFile_Click(object sender, EventArgs e)
-		{
-			openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
-			if (openFileDialog.ShowDialog(owner: this) == DialogResult.OK)
-			{
-				filePath = openFileDialog.FileName;
-				textBoxTextFilePath.Text = filePath;
-				fileContent = File.ReadAllText(path: filePath);
-				fileLength = fileContent.Length;
-				numericUpDownModelTextLength.Value = fileLength;
-				groupBoxNgram.Enabled = true;
-			}
-		}
-
-		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-		{
-			// Nur Hintergrundarbeit: Parsen der Argumente und Zähl-Logik ausführen
-			if (e.Argument is not ValueTuple<string, int> args)
-			{
-				e.Result = null;
-				return;
-			}
-
-			(string fileContent, int n) = args;
-			ReadOnlySpan<char> textSpan = fileContent.AsSpan();
-
-			using BackgroundWorker? worker = sender as BackgroundWorker;
-
-			// CPU-intensive Arbeit im Hintergrund (CountNgrams prüft CancellationPending)
-			Dictionary<string, int> ngramCounts = CountNgrams(
-				text: textSpan,
-				n: n,
-				backgroundWorker: worker!);
-
-			// Wenn während der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
-			if (worker?.CancellationPending == true)
-			{
-				e.Cancel = true;
-				e.Result = null;
-				return;
-			}
-
-			// Ergebnis an den UI-Thread zurückgeben
-			e.Result = (ngramCounts, n);
-		}
-
-		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-		{
-			// ProgressChanged läuft auf dem UI-Thread — sichere UI-Aktualisierung
-			int percent = Math.Clamp(value: e.ProgressPercentage, min: 0, max: 100);
-			progressBar.Value = percent;
-			labelProgressPercent.Text = $"{percent} %";
-		}
-
-		private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
-			// Fehlerbehandlung
-			if (e.Error != null)
-			{
-				MessageBox.Show(text: e.Error.Message, caption: "Error", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
-				return;
-			}
-
-			if (e.Cancelled)
-			{
-				// Abbruch: Rücksetzen UI / Info
-				labelProgressPercent.Text = "Cancelled";
-				progressBar.Value = 0;
-				return;
-			}
-
-			if (e.Result is not ValueTuple<Dictionary<string, int>, int> result || result.Item1 == null)
-			{
-				return;
-			}
-
-			ngramCounts = result.Item1;
-			n = result.Item2;
-			groupBoxModelText.Enabled = true;
-			groupBoxTokenFrequency.Enabled = true;
-			groupBoxProperties.Enabled = true;
-
-			// Sortiere optional (z. B. absteigend nach Häufigkeit) und setze VirtualMode
-			KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
-			EnableVirtualListViewForTokens(tokens: tokens);
-
-			// UI-Übersicht aktualisieren
-			UpdateNgramProperties(dict: ngramCounts, n: n);
-
-			// finalen Progress anzeigen
-			progressBar.Value = 100;
-			labelProgressPercent.Text = "100 %";
-		}
-		private void ButtonRebuildTokenList_Click(object sender, EventArgs e)
-		{
-			groupBoxProgress.Enabled = true;
-			groupBoxModelText.Enabled = false;
-			groupBoxTokenFrequency.Enabled = false;
-			groupBoxProperties.Enabled = false;
-			listViewToken.Items.Clear();
-			listViewProperties.Items.Clear();
-			progressBar.Value = 0;
-			labelProgressPercent.Text = "0 %";
-
-			// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
-			backgroundWorker.RunWorkerAsync(argument: (fileContent, (int)numericUpDownNGram.Value));
-		}
-
-		private void ButtonCancel_Click(object sender, EventArgs e)
-		{
-			// Button zum Abbruch (Button in Designer an diesen Handler binden)
-			if (backgroundWorker.IsBusy && backgroundWorker.WorkerSupportsCancellation)
-			{
-				backgroundWorker.CancelAsync();
-				labelProgressPercent.Text = "Abort request...";
-			}
-		}
-
-		private void ButtonCreateModelText_Click(object sender, EventArgs e)
-		{
-			if (ngramCounts == null || n <= 0)
-			{
-				MessageBox.Show(text: "Please open a file first and calculate the N-grams.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
-				return;
-			}
-			string model = GenerateModelText(ngramCounts, n: n, length: (int)numericUpDownModelTextLength.Value);
-			textBoxModelText.Text = model;
 		}
 
 		// Generiert Modelltext basierend auf den gezählten N‑Grams.
@@ -405,15 +280,6 @@ namespace GraML
 			return sb.Length > length ? sb.ToString(startIndex: 0, length: length) : sb.ToString();
 		}
 
-		private void MainForm_Load(object sender, EventArgs e)
-		{
-			groupBoxNgram.Enabled = false;
-			groupBoxProgress.Enabled = false;
-			groupBoxTokenFrequency.Enabled = false;
-			groupBoxProperties.Enabled = false;
-			groupBoxModelText.Enabled = false;
-		}
-
 		private void SaveListViewTokenToCsv(string? path = null)
 		{
 			// Falls kein Pfad übergeben wurde, SaveFileDialog anzeigen
@@ -461,16 +327,6 @@ namespace GraML
 			return $"\"{value.Replace(oldValue: "\"", newValue: "\"\"")}\"";
 		}
 
-		private void ButtonSaveTokenListAsCsv_Click(object sender, EventArgs e)
-		{
-			if (listViewToken.Items.Count == 0)
-			{
-				MessageBox.Show(text: "No tokens available for export.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
-				return;
-			}
-			SaveListViewTokenToCsv();
-		}
-
 		private void SaveModelTextToFile(string? path = null)
 		{
 			// Inhalt prüfen
@@ -504,14 +360,6 @@ namespace GraML
 			}
 		}
 
-		private void ButtonSaveModelText_Click(object sender, EventArgs e)
-		{
-			SaveModelTextToFile();
-		}
-
-		// Feld zum Speichern der Token als Array für VirtualMode
-		private KeyValuePair<string, int>[] tokenArray = [];
-
 		// Aktiviert VirtualMode und legt die Länge fest
 		private void EnableVirtualListViewForTokens(KeyValuePair<string, int>[] tokens)
 		{
@@ -531,6 +379,185 @@ namespace GraML
 			}
 		}
 
+		#endregion
+
+		#region Constructor
+
+		public MainForm()
+		{
+			InitializeComponent();
+		}
+
+		#endregion
+
+		#region Form Events
+
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			groupBoxNgram.Enabled = false;
+			groupBoxProgress.Enabled = false;
+			groupBoxTokenFrequency.Enabled = false;
+			groupBoxProperties.Enabled = false;
+			groupBoxModelText.Enabled = false;
+		}
+
+		#endregion
+
+		#region Click Handlers
+
+		private void ButtonSelectTextFile_Click(object sender, EventArgs e)
+		{
+			openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
+			if (openFileDialog.ShowDialog(owner: this) == DialogResult.OK)
+			{
+				filePath = openFileDialog.FileName;
+				textBoxTextFilePath.Text = filePath;
+				fileContent = File.ReadAllText(path: filePath);
+				fileLength = fileContent.Length;
+				numericUpDownModelTextLength.Value = fileLength;
+				groupBoxNgram.Enabled = true;
+			}
+		}
+
+		private void ButtonRebuildTokenList_Click(object sender, EventArgs e)
+		{
+			groupBoxProgress.Enabled = true;
+			groupBoxModelText.Enabled = false;
+			groupBoxTokenFrequency.Enabled = false;
+			groupBoxProperties.Enabled = false;
+			listViewToken.Items.Clear();
+			listViewProperties.Items.Clear();
+			progressBar.Value = 0;
+			labelProgressPercent.Text = "0 %";
+
+			// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
+			backgroundWorker.RunWorkerAsync(argument: (fileContent, (int)numericUpDownNGram.Value));
+		}
+
+		private void ButtonCancel_Click(object sender, EventArgs e)
+		{
+			// Button zum Abbruch (Button in Designer an diesen Handler binden)
+			if (backgroundWorker.IsBusy && backgroundWorker.WorkerSupportsCancellation)
+			{
+				backgroundWorker.CancelAsync();
+				labelProgressPercent.Text = "Abort request...";
+			}
+		}
+
+		private void ButtonCreateModelText_Click(object sender, EventArgs e)
+		{
+			if (ngramCounts == null || n <= 0)
+			{
+				MessageBox.Show(text: "Please open a file first and calculate the N-grams.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
+				return;
+			}
+			string model = GenerateModelText(ngramCounts, n: n, length: (int)numericUpDownModelTextLength.Value);
+			textBoxModelText.Text = model;
+		}
+
+		private void ButtonSaveTokenListAsCsv_Click(object sender, EventArgs e)
+		{
+			if (listViewToken.Items.Count == 0)
+			{
+				MessageBox.Show(text: "No tokens available for export.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
+				return;
+			}
+			SaveListViewTokenToCsv();
+		}
+
+		private void ButtonSaveModelText_Click(object sender, EventArgs e)
+		{
+			SaveModelTextToFile();
+		}
+
+		#endregion
+
+		#region BackgroundWorker Handlers
+
+		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+		{
+			// Nur Hintergrundarbeit: Parsen der Argumente und Zähl-Logik ausführen
+			if (e.Argument is not ValueTuple<string, int> args)
+			{
+				e.Result = null;
+				return;
+			}
+
+			(string fileContent, int n) = args;
+			ReadOnlySpan<char> textSpan = fileContent.AsSpan();
+
+			using BackgroundWorker? worker = sender as BackgroundWorker;
+
+			// CPU-intensive Arbeit im Hintergrund (CountNgrams prüft CancellationPending)
+			Dictionary<string, int> ngramCounts = CountNgrams(
+				text: textSpan,
+				n: n,
+				backgroundWorker: worker!);
+
+			// Wenn während der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
+			if (worker?.CancellationPending == true)
+			{
+				e.Cancel = true;
+				e.Result = null;
+				return;
+			}
+
+			// Ergebnis an den UI-Thread zurückgeben
+			e.Result = (ngramCounts, n);
+		}
+
+		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+		{
+			// ProgressChanged läuft auf dem UI-Thread — sichere UI-Aktualisierung
+			int percent = Math.Clamp(value: e.ProgressPercentage, min: 0, max: 100);
+			progressBar.Value = percent;
+			labelProgressPercent.Text = $"{percent} %";
+		}
+
+		private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		{
+			// Fehlerbehandlung
+			if (e.Error != null)
+			{
+				MessageBox.Show(text: e.Error.Message, caption: "Error", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
+				return;
+			}
+
+			if (e.Cancelled)
+			{
+				// Abbruch: Rücksetzen UI / Info
+				labelProgressPercent.Text = "Cancelled";
+				progressBar.Value = 0;
+				return;
+			}
+
+			if (e.Result is not ValueTuple<Dictionary<string, int>, int> result || result.Item1 == null)
+			{
+				return;
+			}
+
+			ngramCounts = result.Item1;
+			n = result.Item2;
+			groupBoxModelText.Enabled = true;
+			groupBoxTokenFrequency.Enabled = true;
+			groupBoxProperties.Enabled = true;
+
+			// Sortiere optional (z. B. absteigend nach Häufigkeit) und setze VirtualMode
+			KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
+			EnableVirtualListViewForTokens(tokens: tokens);
+
+			// UI-Übersicht aktualisieren
+			UpdateNgramProperties(dict: ngramCounts, n: n);
+
+			// finalen Progress anzeigen
+			progressBar.Value = 100;
+			labelProgressPercent.Text = "100 %";
+		}
+
+		#endregion
+
+		#region ListView Event Handlers
+
 		// Event-Handler: liefert beim Bedarf das gewünschte ListViewItem
 		private void ListViewToken_RetrieveVirtualItem(object? sender, RetrieveVirtualItemEventArgs e)
 		{
@@ -539,5 +566,7 @@ namespace GraML
 			item.SubItems.Add(text: kv.Value.ToString());
 			e.Item = item;
 		}
+
+		#endregion
 	}
 }
