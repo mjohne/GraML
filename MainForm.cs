@@ -15,15 +15,25 @@ namespace GraML
 			int possible = text.Length - n + 1;
 			Dictionary<string, int> dict = new(capacity: Math.Max(val1: 4, val2: possible), comparer: StringComparer.Ordinal);
 
-			progressBar.Maximum = possible;
-			MessageBox.Show(text: $"Calculating {n}-grams. Total possible n-grams: {possible}", caption: "Info", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
-
+			// Keine direkten UI-Änderungen hier (laufen im UI-Thread). Nur Progress melden.
 			for (int i = 0; i < possible; i++)
 			{
+				// Abbruchprüfung im heißen Loop
+				if (backgroundWorker?.CancellationPending == true)
+				{
+					// frühzeitig abbrechen und aktuellen Zwischenstand zurückgeben
+					return dict;
+				}
+
 				string token = new(value: text.Slice(start: i, length: n));
 				dict[key: token] = dict.TryGetValue(key: token, value: out int cnt) ? cnt + 1 : 1;
-				backgroundWorker.ReportProgress(percentProgress: i * 100 / possible);
-				labelProgress.Text = $"{i * 100 / possible} %";
+
+				// Progress melden (wird im UI-Thread in ProgressChanged verarbeitet)
+				if (backgroundWorker != null && backgroundWorker.WorkerReportsProgress)
+				{
+					int percent = (int)((i + 1) * 100L / possible);
+					backgroundWorker.ReportProgress(percentProgress: percent);
+				}
 			}
 
 			return dict;
@@ -105,6 +115,7 @@ namespace GraML
 				listViewNgram.Items.Clear();
 				listViewProperties.Items.Clear();
 				progressBar.Value = 0;
+				labelProgressPercent.Text = "0 %";
 
 				// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
 				backgroundWorker.RunWorkerAsync(argument: (fileContent, n));
@@ -123,11 +134,34 @@ namespace GraML
 			(string fileContent, int n) = args;
 			ReadOnlySpan<char> textSpan = fileContent.AsSpan();
 
-			// CPU-intensive Arbeit im Hintergrund
-			Dictionary<string, int> ngramCounts = CountNgrams(text: textSpan, n: n, progressBar: progressBar, backgroundWorker: backgroundWorker, labelProgress: labelProgressPercent);
+			using BackgroundWorker? worker = sender as BackgroundWorker;
+
+			// CPU-intensive Arbeit im Hintergrund (CountNgrams prüft CancellationPending)
+			Dictionary<string, int> ngramCounts = CountNgrams(
+				text: textSpan,
+				n: n,
+				progressBar: progressBar,
+				backgroundWorker: worker!,
+				labelProgress: labelProgressPercent);
+
+			// Wenn während der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
+			if (worker?.CancellationPending == true)
+			{
+				e.Cancel = true;
+				e.Result = null;
+				return;
+			}
 
 			// Ergebnis an den UI-Thread zurückgeben
 			e.Result = (ngramCounts, n);
+		}
+
+		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+		{
+			// ProgressChanged läuft auf dem UI-Thread — sichere UI-Aktualisierung
+			int percent = Math.Clamp(value: e.ProgressPercentage, min: 0, max: 100);
+			progressBar.Value = percent;
+			labelProgressPercent.Text = $"{percent} %";
 		}
 
 		private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -141,7 +175,9 @@ namespace GraML
 
 			if (e.Cancelled)
 			{
-				// ggf. Abbruch-Handling
+				// Abbruch: Rücksetzen UI / Info
+				labelProgressPercent.Text = "Cancelled";
+				progressBar.Value = 0;
 				return;
 			}
 
@@ -154,6 +190,7 @@ namespace GraML
 			int n = result.Item2;
 
 			// UI-Updates auf dem UI-Thread
+			listViewNgram.Items.Clear();
 			foreach (KeyValuePair<string, int> kv in ngramCounts)
 			{
 				ListViewItem item = new(text: kv.Key);
@@ -163,11 +200,20 @@ namespace GraML
 
 			// UI-Übersicht aktualisieren
 			UpdateNgramProperties(dict: ngramCounts, n: n);
+
+			// finalen Progress anzeigen
+			progressBar.Value = 100;
+			labelProgressPercent.Text = "100 %";
 		}
 
-		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+		private void ButtonCancel_Click(object sender, EventArgs e)
 		{
-			progressBar.PerformStep();
+			// Button zum Abbruch (Button in Designer an diesen Handler binden)
+			if (backgroundWorker.IsBusy && backgroundWorker.WorkerSupportsCancellation)
+			{
+				backgroundWorker.CancelAsync();
+				labelProgressPercent.Text = "Abort request...";
+			}
 		}
 
 		private void ButtonCreateModelText_Click(object sender, EventArgs e)
