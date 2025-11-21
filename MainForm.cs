@@ -108,7 +108,7 @@ namespace GraML
 			InitializeComponent();
 		}
 
-		private void ButtonOpenTextFile_Click(object sender, EventArgs e)
+		private void ButtonSelectTextFile_Click(object sender, EventArgs e)
 		{
 			openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
 			if (openFileDialog.ShowDialog(owner: this) == DialogResult.OK)
