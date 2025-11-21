@@ -95,7 +95,7 @@ namespace GraML
 			AddProperty(name: "Hapax Legomena (occurring once)", value: $"{dict.Values.Count(predicate: v => v == 1)}");
 			AddProperty(name: "Dis Legomena (occurring twice)", value: $"{dict.Values.Count(predicate: v => v == 2)}");
 			AddProperty(name: "Ratio of Hapax Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 1) / (double)total:F4}");
-			AddProperty(name: "Yule's K Measure", value: $"{10000 * (dict.Values.Sum(selector: v => v * v) - dict.Values.Sum()) / (double)(total * total):F4}");
+			//AddProperty(name: "Yule's K Measure", value: $"{10000 * (dict.Values.Sum(selector: v => v * v) - dict.Values.Sum()) / (double)(total * total):F4}");
 			AddProperty(name: "Normalized Entropy", value: $"{entropy / Math.Log2(x: dict.Count):F4}");
 		}
 
@@ -392,7 +392,7 @@ namespace GraML
 					// (vermeidet frühes Abbrechen)
 					string[] keys = [.. prefixMap.Keys];
 					curPrefix = keys[rng.Next(maxValue: keys.Length)];
-					sb.Append(value: curPrefix); // kann len erhöhen; prüfe dann beim nächsten Loop
+					sb.Append(value: curPrefix); // kann Länge erhöhen; prüfe dann beim nächsten Loop
 					if (sb.Length >= length)
 					{
 						break;
@@ -417,6 +417,101 @@ namespace GraML
 			groupBoxTokenFrequency.Enabled = false;
 			groupBoxProperties.Enabled = false;
 			groupBoxModelText.Enabled = false;
+		}
+
+		private void SaveListViewTokenToCsv(string? path = null)
+		{
+			// Falls kein Pfad übergeben wurde, SaveFileDialog anzeigen
+			if (string.IsNullOrEmpty(value: path))
+			{
+				if (saveFileDialogTokenList.ShowDialog(owner: this) != DialogResult.OK)
+				{
+					return;
+				}
+
+				path = saveFileDialogTokenList.FileName;
+			}
+
+			// Kopfzeile und Zeilen erzeugen
+			StringBuilder sb = new();
+			sb.AppendLine(value: "Token,Count");
+
+			foreach (ListViewItem item in listViewToken.Items)
+			{
+				string token = item.Text ?? string.Empty;
+				string count = item.SubItems.Count > 1 ? item.SubItems[index: 1].Text ?? string.Empty : string.Empty;
+				sb.AppendLine(handler: $"{EscapeCsv(value: token)},{EscapeCsv(value: count)}");
+			}
+
+			// Datei schreiben (UTF-8 mit BOM)
+			File.WriteAllText(path: path, contents: sb.ToString(), encoding: new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+			MessageBox.Show(text: $"CSV file saved: {path}", caption: "Export completed", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
+		}
+
+		private static string EscapeCsv(string value)
+		{
+			if (string.IsNullOrEmpty(value: value))
+			{
+				return string.Empty;
+			}
+
+			bool mustQuote = value.Contains(value: ',') || value.Contains(value: '"') || value.Contains(value: '\n') || value.Contains(value: '\r');
+			if (!mustQuote)
+			{
+				return value;
+			}
+
+			// Doppelte Anführungszeichen verdoppeln und den Wert in Anführungszeichen setzen
+			return $"\"{value.Replace(oldValue: "\"", newValue: "\"\"")}\"";
+		}
+
+		private void ButtonSaveTokenListAsCsv_Click(object sender, EventArgs e)
+		{
+			if (listViewToken.Items.Count == 0)
+			{
+				MessageBox.Show(text: "No tokens available for export.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
+				return;
+			}
+			SaveListViewTokenToCsv();
+		}
+
+		private void SaveModelTextToFile(string? path = null)
+		{
+			// Inhalt prüfen
+			string content = textBoxModelText?.Text ?? string.Empty;
+			if (string.IsNullOrWhiteSpace(value: content))
+			{
+				MessageBox.Show(text: "No model text to save.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
+				return;
+			}
+
+			// Falls kein Pfad angegeben, SaveFileDialog anzeigen
+			if (string.IsNullOrEmpty(value: path))
+			{
+				if (saveFileDialogModelText.ShowDialog(owner: this) != DialogResult.OK)
+				{
+					return;
+				}
+
+				path = saveFileDialogModelText.FileName;
+			}
+
+			// Schreiben mit BOM (UTF-8)
+			try
+			{
+				File.WriteAllText(path: path, contents: content, encoding: new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+				MessageBox.Show(text: $"Model text saved: {path}", caption: "Export completed", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(text: ex.Message, caption: "Error saving", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
+			}
+		}
+
+		private void ButtonSaveModelText_Click(object sender, EventArgs e)
+		{
+			SaveModelTextToFile();
 		}
 	}
 }
