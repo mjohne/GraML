@@ -30,7 +30,7 @@
 		{
 			buttonSelectTextFile = new Button();
 			openFileDialog = new OpenFileDialog();
-			listViewNgram = new ListView();
+			listViewToken = new ListView();
 			columnHeaderToken = new ColumnHeader();
 			columnHeaderFrequency = new ColumnHeader();
 			numericUpDownNGram = new NumericUpDown();
@@ -53,7 +53,7 @@
 			buttonRebuild = new Button();
 			groupBoxProgress = new GroupBox();
 			groupBoxTokenFrequency = new GroupBox();
-			buttonSaveAsCsV = new Button();
+			buttonSaveAsCsv = new Button();
 			groupBoxProperties = new GroupBox();
 			groupBoxModelText = new GroupBox();
 			buttonSaveAsTextFile = new Button();
@@ -82,18 +82,18 @@
 			openFileDialog.DefaultExt = "*.txt";
 			openFileDialog.OkRequiresInteraction = true;
 			// 
-			// listViewNgram
+			// listViewToken
 			// 
-			listViewNgram.Columns.AddRange(new ColumnHeader[] { columnHeaderToken, columnHeaderFrequency });
-			listViewNgram.FullRowSelect = true;
-			listViewNgram.Location = new Point(6, 22);
-			listViewNgram.MultiSelect = false;
-			listViewNgram.Name = "listViewNgram";
-			listViewNgram.ShowItemToolTips = true;
-			listViewNgram.Size = new Size(163, 188);
-			listViewNgram.TabIndex = 0;
-			listViewNgram.UseCompatibleStateImageBehavior = false;
-			listViewNgram.View = View.Details;
+			listViewToken.Columns.AddRange(new ColumnHeader[] { columnHeaderToken, columnHeaderFrequency });
+			listViewToken.FullRowSelect = true;
+			listViewToken.Location = new Point(6, 22);
+			listViewToken.MultiSelect = false;
+			listViewToken.Name = "listViewToken";
+			listViewToken.ShowItemToolTips = true;
+			listViewToken.Size = new Size(163, 188);
+			listViewToken.TabIndex = 0;
+			listViewToken.UseCompatibleStateImageBehavior = false;
+			listViewToken.View = View.Details;
 			// 
 			// columnHeaderToken
 			// 
@@ -275,6 +275,7 @@
 			buttonRebuild.TabIndex = 2;
 			buttonRebuild.Text = "Rebuild token list";
 			buttonRebuild.UseVisualStyleBackColor = true;
+			buttonRebuild.Click += ButtonRebuildTokenList_Click;
 			// 
 			// groupBoxProgress
 			// 
@@ -291,8 +292,8 @@
 			// 
 			// groupBoxTokenFrequency
 			// 
-			groupBoxTokenFrequency.Controls.Add(buttonSaveAsCsV);
-			groupBoxTokenFrequency.Controls.Add(listViewNgram);
+			groupBoxTokenFrequency.Controls.Add(buttonSaveAsCsv);
+			groupBoxTokenFrequency.Controls.Add(listViewToken);
 			groupBoxTokenFrequency.Location = new Point(12, 128);
 			groupBoxTokenFrequency.Name = "groupBoxTokenFrequency";
 			groupBoxTokenFrequency.Size = new Size(177, 245);
@@ -300,15 +301,14 @@
 			groupBoxTokenFrequency.TabStop = false;
 			groupBoxTokenFrequency.Text = "Token Frequency";
 			// 
-			// buttonSaveAsCsV
+			// buttonSaveAsCsv
 			// 
-			buttonSaveAsCsV.Enabled = false;
-			buttonSaveAsCsV.Location = new Point(6, 216);
-			buttonSaveAsCsV.Name = "buttonSaveAsCsV";
-			buttonSaveAsCsV.Size = new Size(163, 23);
-			buttonSaveAsCsV.TabIndex = 1;
-			buttonSaveAsCsV.Text = "Save as CSV";
-			buttonSaveAsCsV.UseVisualStyleBackColor = true;
+			buttonSaveAsCsv.Location = new Point(6, 216);
+			buttonSaveAsCsv.Name = "buttonSaveAsCsv";
+			buttonSaveAsCsv.Size = new Size(163, 23);
+			buttonSaveAsCsv.TabIndex = 1;
+			buttonSaveAsCsv.Text = "Save as CSV";
+			buttonSaveAsCsv.UseVisualStyleBackColor = true;
 			// 
 			// groupBoxProperties
 			// 
@@ -336,7 +336,6 @@
 			// 
 			// buttonSaveAsTextFile
 			// 
-			buttonSaveAsTextFile.Enabled = false;
 			buttonSaveAsTextFile.Location = new Point(343, 22);
 			buttonSaveAsTextFile.Name = "buttonSaveAsTextFile";
 			buttonSaveAsTextFile.Size = new Size(126, 23);
@@ -359,6 +358,7 @@
 			Name = "MainForm";
 			StartPosition = FormStartPosition.CenterScreen;
 			Text = "GraML";
+			Load += MainForm_Load;
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).EndInit();
 			((System.ComponentModel.ISupportInitialize)numericUpDownModelTextLength).EndInit();
 			groupBoxTextFile.ResumeLayout(false);
@@ -378,7 +378,7 @@
 
 		private Button buttonSelectTextFile;
 		private OpenFileDialog openFileDialog;
-		private ListView listViewNgram;
+		private ListView listViewToken;
 		private ColumnHeader columnHeaderToken;
 		private ColumnHeader columnHeaderFrequency;
 		private NumericUpDown numericUpDownNGram;
@@ -402,7 +402,7 @@
 		private GroupBox groupBoxTokenFrequency;
 		private GroupBox groupBoxProperties;
 		private Button buttonRebuild;
-		private Button buttonSaveAsCsV;
+		private Button buttonSaveAsCsv;
 		private GroupBox groupBoxModelText;
 		private Button buttonSaveAsTextFile;
 	}

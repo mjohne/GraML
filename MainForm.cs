@@ -9,6 +9,12 @@ namespace GraML
 
 		private int n;
 
+		private int fileLength;
+
+		private string filePath = string.Empty;
+
+		private string fileContent = string.Empty;
+
 		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
 		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, BackgroundWorker backgroundWorker)
 		{
@@ -110,16 +116,12 @@ namespace GraML
 			openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
 			if (openFileDialog.ShowDialog(owner: this) == DialogResult.OK)
 			{
-				string filePath = openFileDialog.FileName;
-				string fileContent = File.ReadAllText(path: filePath);
-				int n = (int)numericUpDownNGram.Value;
-				listViewNgram.Items.Clear();
-				listViewProperties.Items.Clear();
-				progressBar.Value = 0;
-				labelProgressPercent.Text = "0 %";
-
-				// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
-				backgroundWorker.RunWorkerAsync(argument: (fileContent, n));
+				filePath = openFileDialog.FileName;
+				textBoxTextFilePath.Text = filePath;
+				fileContent = File.ReadAllText(path: filePath);
+				fileLength = fileContent.Length;
+				numericUpDownModelTextLength.Value = fileLength;
+				groupBoxNgram.Enabled = true;
 			}
 		}
 
@@ -187,14 +189,17 @@ namespace GraML
 
 			ngramCounts = result.Item1;
 			n = result.Item2;
+			groupBoxModelText.Enabled = true;
+			groupBoxTokenFrequency.Enabled = true;
+			groupBoxProperties.Enabled = true;
 
 			// UI-Updates auf dem UI-Thread
-			listViewNgram.Items.Clear();
+			listViewToken.Items.Clear();
 			foreach (KeyValuePair<string, int> kv in ngramCounts)
 			{
 				ListViewItem item = new(text: kv.Key);
 				item.SubItems.Add(text: $"{kv.Value}");
-				listViewNgram.Items.Add(value: item);
+				listViewToken.Items.Add(value: item);
 			}
 
 			// UI-Übersicht aktualisieren
@@ -203,6 +208,20 @@ namespace GraML
 			// finalen Progress anzeigen
 			progressBar.Value = 100;
 			labelProgressPercent.Text = "100 %";
+		}
+		private void ButtonRebuildTokenList_Click(object sender, EventArgs e)
+		{
+			groupBoxProgress.Enabled = true;
+			groupBoxModelText.Enabled = false;
+			groupBoxTokenFrequency.Enabled = false;
+			groupBoxProperties.Enabled = false;
+			listViewToken.Items.Clear();
+			listViewProperties.Items.Clear();
+			progressBar.Value = 0;
+			labelProgressPercent.Text = "0 %";
+
+			// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
+			backgroundWorker.RunWorkerAsync(argument: (fileContent, (int)numericUpDownNGram.Value));
 		}
 
 		private void ButtonCancel_Click(object sender, EventArgs e)
@@ -389,6 +408,15 @@ namespace GraML
 
 			// Falls länger als gewünscht, trimmen
 			return sb.Length > length ? sb.ToString(startIndex: 0, length: length) : sb.ToString();
+		}
+
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			groupBoxNgram.Enabled = false;
+			groupBoxProgress.Enabled = false;
+			groupBoxTokenFrequency.Enabled = false;
+			groupBoxProperties.Enabled = false;
+			groupBoxModelText.Enabled = false;
 		}
 	}
 }
