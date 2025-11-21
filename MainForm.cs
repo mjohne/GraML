@@ -5,8 +5,12 @@ namespace GraML
 {
 	public partial class MainForm : Form
 	{
+		private Dictionary<string, int>? ngramCounts;
+
+		private int n;
+
 		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
-		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, ProgressBar progressBar, BackgroundWorker backgroundWorker, Label labelProgress)
+		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, BackgroundWorker backgroundWorker)
 		{
 			if (n <= 0 || text.Length < n)
 			{
@@ -16,20 +20,16 @@ namespace GraML
 			int possible = text.Length - n + 1;
 			Dictionary<string, int> dict = new(capacity: Math.Max(val1: 4, val2: possible), comparer: StringComparer.Ordinal);
 
-			// Keine direkten UI-Änderungen hier (laufen im UI-Thread). Nur Progress melden.
 			for (int i = 0; i < possible; i++)
 			{
-				// Abbruchprüfung im heißen Loop
 				if (backgroundWorker?.CancellationPending == true)
 				{
-					// frühzeitig abbrechen und aktuellen Zwischenstand zurückgeben
 					return dict;
 				}
 
 				string token = new(value: text.Slice(start: i, length: n));
 				dict[key: token] = dict.TryGetValue(key: token, value: out int cnt) ? cnt + 1 : 1;
 
-				// Progress melden (wird im UI-Thread in ProgressChanged verarbeitet)
 				if (backgroundWorker != null && backgroundWorker.WorkerReportsProgress)
 				{
 					int percent = (int)((i + 1) * 100L / possible);
@@ -45,7 +45,7 @@ namespace GraML
 		{
 			if (dict == null || dict.Count == 0)
 			{
-				AddProperty(name: "n-gram size", value: $"{n}");
+				AddProperty(name: "n-gram length", value: $"{n}");
 				AddProperty(name: "Total unique n-grams", value: "0");
 				return;
 			}
@@ -65,7 +65,7 @@ namespace GraML
 			double entropy = -probs.Where(predicate: p => p > 0).Sum(selector: p => p * Math.Log2(x: p));
 			double gini = 1 - probs.Sum(selector: p => p * p);
 
-			AddProperty(name: "n-gram size", value: $"{n}");
+			AddProperty(name: "n-gram length", value: $"{n}");
 			AddProperty(name: "Total unique n-grams", value: $"{unique}");
 			AddProperty(name: "Total n-grams", value: $"{total}");
 			AddProperty(name: "Proportion of unique n-grams", value: $"{unique / (double)total:F4}");
@@ -99,9 +99,6 @@ namespace GraML
 			item.SubItems.Add(text: value);
 			listViewProperties.Items.Add(value: item);
 		}
-
-		private Dictionary<string, int>? ngramCounts;
-		private int n;
 
 		public MainForm()
 		{
@@ -144,9 +141,7 @@ namespace GraML
 			Dictionary<string, int> ngramCounts = CountNgrams(
 				text: textSpan,
 				n: n,
-				progressBar: progressBar,
-				backgroundWorker: worker!,
-				labelProgress: labelProgressPercent);
+				backgroundWorker: worker!);
 
 			// Wenn während der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
 			if (worker?.CancellationPending == true)
