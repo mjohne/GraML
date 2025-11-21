@@ -44,6 +44,7 @@
 			labelProgress = new Label();
 			textBox1 = new TextBox();
 			buttonCreateModelText = new Button();
+			buttonCancel = new Button();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			SuspendLayout();
 			// 
@@ -179,11 +180,22 @@
 			buttonCreateModelText.UseVisualStyleBackColor = true;
 			buttonCreateModelText.Click += ButtonCreateModelText_Click;
 			// 
+			// buttonCancel
+			// 
+			buttonCancel.Location = new Point(548, 12);
+			buttonCancel.Name = "buttonCancel";
+			buttonCancel.Size = new Size(105, 23);
+			buttonCancel.TabIndex = 10;
+			buttonCancel.Text = "Cancel progress";
+			buttonCancel.UseVisualStyleBackColor = true;
+			buttonCancel.Click += ButtonCancel_Click;
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(665, 510);
+			ClientSize = new Size(665, 539);
+			Controls.Add(buttonCancel);
 			Controls.Add(buttonCreateModelText);
 			Controls.Add(textBox1);
 			Controls.Add(labelProgress);
@@ -221,5 +233,6 @@
 		private Label labelProgress;
 		private TextBox textBox1;
 		private Button buttonCreateModelText;
+		private Button buttonCancel;
 	}
 }
