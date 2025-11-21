@@ -170,7 +170,7 @@ namespace GraML
 			// Fehlerbehandlung
 			if (e.Error != null)
 			{
-				MessageBox.Show(text: e.Error.Message, caption: "Fehler", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
+				MessageBox.Show(text: e.Error.Message, caption: "Error", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
 				return;
 			}
 
@@ -194,8 +194,8 @@ namespace GraML
 			groupBoxProperties.Enabled = true;
 
 			// Sortiere optional (z. B. absteigend nach Häufigkeit) und setze VirtualMode
-			var tokens = ngramCounts.OrderByDescending(kv => kv.Value).ToArray();
-			EnableVirtualListViewForTokens(tokens);
+			KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
+			EnableVirtualListViewForTokens(tokens: tokens);
 
 			// UI-Übersicht aktualisieren
 			UpdateNgramProperties(dict: ngramCounts, n: n);
@@ -510,7 +510,7 @@ namespace GraML
 		}
 
 		// Feld zum Speichern der Token als Array für VirtualMode
-		private KeyValuePair<string, int>[] tokenArray = Array.Empty<KeyValuePair<string, int>>();
+		private KeyValuePair<string, int>[] tokenArray = [];
 
 		// Aktiviert VirtualMode und legt die Länge fest
 		private void EnableVirtualListViewForTokens(KeyValuePair<string, int>[] tokens)
@@ -520,7 +520,7 @@ namespace GraML
 			{
 				// detach/attach sichert gegen doppelte Events
 				listViewToken.RetrieveVirtualItem -= ListViewToken_RetrieveVirtualItem;
-				tokenArray = tokens ?? Array.Empty<KeyValuePair<string, int>>();
+				tokenArray = tokens ?? [];
 				listViewToken.VirtualMode = true;
 				listViewToken.VirtualListSize = tokenArray.Length;
 				listViewToken.RetrieveVirtualItem += ListViewToken_RetrieveVirtualItem;
@@ -534,9 +534,9 @@ namespace GraML
 		// Event-Handler: liefert beim Bedarf das gewünschte ListViewItem
 		private void ListViewToken_RetrieveVirtualItem(object? sender, RetrieveVirtualItemEventArgs e)
 		{
-			var kv = tokenArray[e.ItemIndex];
-			var item = new ListViewItem(kv.Key);
-			item.SubItems.Add(kv.Value.ToString());
+			KeyValuePair<string, int> kv = tokenArray[e.ItemIndex];
+			ListViewItem item = new(text: kv.Key);
+			item.SubItems.Add(text: kv.Value.ToString());
 			e.Item = item;
 		}
 	}
