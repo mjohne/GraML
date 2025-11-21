@@ -193,14 +193,9 @@ namespace GraML
 			groupBoxTokenFrequency.Enabled = true;
 			groupBoxProperties.Enabled = true;
 
-			// UI-Updates auf dem UI-Thread
-			listViewToken.Items.Clear();
-			foreach (KeyValuePair<string, int> kv in ngramCounts)
-			{
-				ListViewItem item = new(text: kv.Key);
-				item.SubItems.Add(text: $"{kv.Value}");
-				listViewToken.Items.Add(value: item);
-			}
+			// Sortiere optional (z. B. absteigend nach Häufigkeit) und setze VirtualMode
+			var tokens = ngramCounts.OrderByDescending(kv => kv.Value).ToArray();
+			EnableVirtualListViewForTokens(tokens);
 
 			// UI-Übersicht aktualisieren
 			UpdateNgramProperties(dict: ngramCounts, n: n);
@@ -512,6 +507,37 @@ namespace GraML
 		private void ButtonSaveModelText_Click(object sender, EventArgs e)
 		{
 			SaveModelTextToFile();
+		}
+
+		// Feld zum Speichern der Token als Array für VirtualMode
+		private KeyValuePair<string, int>[] tokenArray = Array.Empty<KeyValuePair<string, int>>();
+
+		// Aktiviert VirtualMode und legt die Länge fest
+		private void EnableVirtualListViewForTokens(KeyValuePair<string, int>[] tokens)
+		{
+			listViewToken.BeginUpdate();
+			try
+			{
+				// detach/attach sichert gegen doppelte Events
+				listViewToken.RetrieveVirtualItem -= ListViewToken_RetrieveVirtualItem;
+				tokenArray = tokens ?? Array.Empty<KeyValuePair<string, int>>();
+				listViewToken.VirtualMode = true;
+				listViewToken.VirtualListSize = tokenArray.Length;
+				listViewToken.RetrieveVirtualItem += ListViewToken_RetrieveVirtualItem;
+			}
+			finally
+			{
+				listViewToken.EndUpdate();
+			}
+		}
+
+		// Event-Handler: liefert beim Bedarf das gewünschte ListViewItem
+		private void ListViewToken_RetrieveVirtualItem(object? sender, RetrieveVirtualItemEventArgs e)
+		{
+			var kv = tokenArray[e.ItemIndex];
+			var item = new ListViewItem(kv.Key);
+			item.SubItems.Add(kv.Value.ToString());
+			e.Item = item;
 		}
 	}
 }
