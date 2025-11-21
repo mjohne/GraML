@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text;
 
 namespace GraML
 {
@@ -223,7 +224,7 @@ namespace GraML
 		{
 			if (ngramCounts == null || n <= 0)
 			{
-				MessageBox.Show("Please open a file first and calculate the N-grams.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				MessageBox.Show(text: "Please open a file first and calculate the N-grams.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
 				return;
 			}
 			string model = GenerateModelText(ngramCounts, n: n, length: (int)numericUpDownModelTextLength.Value);
@@ -234,7 +235,7 @@ namespace GraML
 		// - n: Größe der N‑Gramme (muss mit den Keys in ngramCounts übereinstimmen).
 		// - length: gewünschte Länge des Ausgabetexts in Zeichen.
 		// - rng: optional für reproduzierbare Ergebnisse.
-		private string GenerateModelText(Dictionary<string, int> ngramCounts, int n, int length, Random? rng = null)
+		private static string GenerateModelText(Dictionary<string, int> ngramCounts, int n, int length, Random? rng = null)
 		{
 			if (ngramCounts == null || ngramCounts.Count == 0 || n <= 0 || length <= 0)
 			{
@@ -246,8 +247,8 @@ namespace GraML
 			// Hilfsfunktion: gewichtete Auswahl aus (keys, weights)
 			static char WeightedPick(char[] choices, int[] cumWeights, int total, Random rngLocal)
 			{
-				int r = rngLocal.Next(total);
-				int idx = Array.BinarySearch(cumWeights, r);
+				int r = rngLocal.Next(maxValue: total);
+				int idx = Array.BinarySearch(array: cumWeights, value: r);
 				if (idx < 0)
 				{
 					idx = ~idx;
@@ -264,30 +265,30 @@ namespace GraML
 			// Fall n == 1: einfache gewichtete Auswahl auf einzelnen Zeichen
 			if (n == 1)
 			{
-				List<char> chars = new();
-				List<int> cum = new();
+				List<char> chars = [];
+				List<int> cum = [];
 				int total = 0;
-				foreach (var kv in ngramCounts)
+				foreach (KeyValuePair<string, int> kv in ngramCounts)
 				{
-					if (string.IsNullOrEmpty(kv.Key))
+					if (string.IsNullOrEmpty(value: kv.Key))
 					{
 						continue;
 					}
 
-					char c = kv.Key[0];
+					char c = kv.Key[index: 0];
 					total += kv.Value;
-					chars.Add(c);
-					cum.Add(total);
+					chars.Add(item: c);
+					cum.Add(item: total);
 				}
 				if (chars.Count == 0)
 				{
 					return string.Empty;
 				}
 
-				var sb1 = new System.Text.StringBuilder(length);
+				StringBuilder sb1 = new(capacity: length);
 				for (int i = 0; i < length; i++)
 				{
-					sb1.Append(WeightedPick(chars.ToArray(), cum.ToArray(), total, rng));
+					sb1.Append(value: WeightedPick(choices: [.. chars], cumWeights: [.. cum], total: total, rngLocal: rng));
 				}
 
 				return sb1.ToString();
@@ -295,10 +296,10 @@ namespace GraML
 
 			// Allgemeiner Fall n >= 2
 			// Baue Mapping: prefix (n-1 chars) -> (choices[], cumulativeWeights[], total)
-			var prefixBuckets = new Dictionary<string, Dictionary<char, int>>(StringComparer.Ordinal);
+			Dictionary<string, Dictionary<char, int>> prefixBuckets = new(comparer: StringComparer.Ordinal);
 			int globalTotal = 0;
 
-			foreach (var kv in ngramCounts)
+			foreach (KeyValuePair<string, int> kv in ngramCounts)
 			{
 				string gram = kv.Key;
 				if (gram == null || gram.Length != n)
@@ -307,15 +308,15 @@ namespace GraML
 				}
 
 				string prefix = gram[..(n - 1)];
-				char next = gram[n - 1];
+				char next = gram[index: n - 1];
 
-				if (!prefixBuckets.TryGetValue(prefix, out var inner))
+				if (!prefixBuckets.TryGetValue(key: prefix, value: out Dictionary<char, int>? inner))
 				{
-					inner = new Dictionary<char, int>();
-					prefixBuckets[prefix] = inner;
+					inner = [];
+					prefixBuckets[key: prefix] = inner;
 				}
 
-				inner[next] = inner.TryGetValue(next, out int cnt) ? cnt + kv.Value : kv.Value;
+				inner[key: next] = inner.TryGetValue(key: next, value: out int cnt) ? cnt + kv.Value : kv.Value;
 
 				globalTotal += kv.Value;
 			}
@@ -326,11 +327,11 @@ namespace GraML
 			}
 
 			// Wandle inner dictionaries in arrays (choices + cumulative weights)
-			var prefixMap = new Dictionary<string, (char[] choices, int[] cumWeights, int total)>(StringComparer.Ordinal);
-			foreach (var p in prefixBuckets)
+			Dictionary<string, (char[] choices, int[] cumWeights, int total)> prefixMap = new(StringComparer.Ordinal);
+			foreach (KeyValuePair<string, Dictionary<char, int>> p in prefixBuckets)
 			{
-				var choices = p.Value.Keys.ToArray();
-				var weights = p.Value.Values.ToArray();
+				char[] choices = [.. p.Value.Keys];
+				int[] weights = [.. p.Value.Values];
 				int[] cum = new int[weights.Length];
 				int sum = 0;
 				for (int i = 0; i < weights.Length; i++)
@@ -338,14 +339,14 @@ namespace GraML
 					sum += weights[i];
 					cum[i] = sum;
 				}
-				prefixMap[p.Key] = (choices, cum, sum);
+				prefixMap[key: p.Key] = (choices, cum, sum);
 			}
 
 			// Wähle Startprefix: gewichteter Pick über alle N‑Gramme (nach Häufigkeit)
-			int rstart = rng.Next(globalTotal);
+			int rstart = rng.Next(maxValue: globalTotal);
 			int acc = 0;
 			string startPrefix = prefixMap.Keys.First(); // fallback
-			foreach (var kv in ngramCounts)
+			foreach (KeyValuePair<string, int> kv in ngramCounts)
 			{
 				if (kv.Key == null || kv.Key.Length != n)
 				{
@@ -360,24 +361,24 @@ namespace GraML
 				}
 			}
 
-			var sb = new System.Text.StringBuilder(length);
+			StringBuilder sb = new(capacity: length);
 			// initial: füge Startprefix bei
-			sb.Append(startPrefix);
+			sb.Append(value: startPrefix);
 
 			// Generiere weiter, bis gewünschte Länge erreicht oder kein Übergang mehr existiert
 			while (sb.Length < length)
 			{
 				string curPrefix = sb.Length >= (n - 1)
-					? sb.ToString(sb.Length - (n - 1), n - 1)
+					? sb.ToString(startIndex: sb.Length - (n - 1), length: n - 1)
 					: sb.ToString(); // sollte normalerweise nicht nötig
 
-				if (!prefixMap.TryGetValue(curPrefix, out var bucket))
+				if (!prefixMap.TryGetValue(key: curPrefix, value: out (char[] choices, int[] cumWeights, int total) bucket))
 				{
 					// Kein passender Übergang: wähle zufällig einen existierenden Prefix neu
 					// (vermeidet frühes Abbrechen)
-					var keys = prefixMap.Keys.ToArray();
-					curPrefix = keys[rng.Next(keys.Length)];
-					sb.Append(curPrefix); // kann len erhöhen; prüfe dann beim nächsten Loop
+					string[] keys = [.. prefixMap.Keys];
+					curPrefix = keys[rng.Next(maxValue: keys.Length)];
+					sb.Append(value: curPrefix); // kann len erhöhen; prüfe dann beim nächsten Loop
 					if (sb.Length >= length)
 					{
 						break;
@@ -386,13 +387,13 @@ namespace GraML
 					continue;
 				}
 
-				char next = WeightedPick(bucket.choices, bucket.cumWeights, bucket.total, rng);
-				sb.Append(next);
+				char next = WeightedPick(bucket.choices, bucket.cumWeights, bucket.total, rngLocal: rng);
+				sb.Append(value: next);
 				// slide window automatisch durch sb; loop setzt curPrefix beim nächsten Durchlauf neu
 			}
 
 			// Falls länger als gewünscht, trimmen
-			return sb.Length > length ? sb.ToString(0, length) : sb.ToString();
+			return sb.Length > length ? sb.ToString(startIndex: 0, length: length) : sb.ToString();
 		}
 	}
 }
