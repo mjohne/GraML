@@ -42,10 +42,13 @@
 			labelProgressPercent = new Label();
 			labelNgramLength = new Label();
 			labelProgress = new Label();
-			textBox1 = new TextBox();
+			textBoxModelText = new TextBox();
 			buttonCreateModelText = new Button();
 			buttonCancel = new Button();
+			labelModelTextLength = new Label();
+			numericUpDownModelTextLength = new NumericUpDown();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
+			((System.ComponentModel.ISupportInitialize)numericUpDownModelTextLength).BeginInit();
 			SuspendLayout();
 			// 
 			// buttonOpenTextFile
@@ -162,13 +165,15 @@
 			labelProgress.TabIndex = 3;
 			labelProgress.Text = "Progress:";
 			// 
-			// textBox1
+			// textBoxModelText
 			// 
-			textBox1.Location = new Point(187, 255);
-			textBox1.Multiline = true;
-			textBox1.Name = "textBox1";
-			textBox1.Size = new Size(466, 243);
-			textBox1.TabIndex = 9;
+			textBoxModelText.Location = new Point(187, 255);
+			textBoxModelText.MaxLength = int.MaxValue;
+			textBoxModelText.Multiline = true;
+			textBoxModelText.Name = "textBoxModelText";
+			textBoxModelText.ScrollBars = ScrollBars.Vertical;
+			textBoxModelText.Size = new Size(466, 243);
+			textBoxModelText.TabIndex = 9;
 			// 
 			// buttonCreateModelText
 			// 
@@ -190,14 +195,35 @@
 			buttonCancel.UseVisualStyleBackColor = true;
 			buttonCancel.Click += ButtonCancel_Click;
 			// 
+			// labelModelTextLength
+			// 
+			labelModelTextLength.AutoSize = true;
+			labelModelTextLength.Location = new Point(12, 428);
+			labelModelTextLength.Name = "labelModelTextLength";
+			labelModelTextLength.Size = new Size(104, 15);
+			labelModelTextLength.TabIndex = 11;
+			labelModelTextLength.Text = "model text length:";
+			// 
+			// numericUpDownModelTextLength
+			// 
+			numericUpDownModelTextLength.Location = new Point(12, 446);
+			numericUpDownModelTextLength.Maximum = new decimal(new int[] { int.MaxValue, 0, 0, 0 });
+			numericUpDownModelTextLength.Name = "numericUpDownModelTextLength";
+			numericUpDownModelTextLength.Size = new Size(115, 23);
+			numericUpDownModelTextLength.TabIndex = 12;
+			numericUpDownModelTextLength.TextAlign = HorizontalAlignment.Center;
+			numericUpDownModelTextLength.Value = new decimal(new int[] { 100000, 0, 0, 0 });
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(665, 539);
+			ClientSize = new Size(665, 510);
+			Controls.Add(labelModelTextLength);
+			Controls.Add(numericUpDownModelTextLength);
 			Controls.Add(buttonCancel);
 			Controls.Add(buttonCreateModelText);
-			Controls.Add(textBox1);
+			Controls.Add(textBoxModelText);
 			Controls.Add(labelProgress);
 			Controls.Add(labelNgramLength);
 			Controls.Add(labelProgressPercent);
@@ -211,6 +237,7 @@
 			StartPosition = FormStartPosition.CenterScreen;
 			Text = "GraML";
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).EndInit();
+			((System.ComponentModel.ISupportInitialize)numericUpDownModelTextLength).EndInit();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -231,8 +258,10 @@
 		private Label labelProgressPercent;
 		private Label labelNgramLength;
 		private Label labelProgress;
-		private TextBox textBox1;
+		private TextBox textBoxModelText;
 		private Button buttonCreateModelText;
 		private Button buttonCancel;
+		private Label labelModelTextLength;
+		private NumericUpDown numericUpDownModelTextLength;
 	}
 }

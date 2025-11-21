@@ -1,10 +1,10 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace GraML
 {
 	public partial class MainForm : Form
 	{
-		// Sequenzielle Variante (bestehend) � belassen, falls du sie weiterhin brauchst.
+		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
 		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, ProgressBar progressBar, BackgroundWorker backgroundWorker, Label labelProgress)
 		{
 			if (n <= 0 || text.Length < n)
@@ -15,13 +15,13 @@ namespace GraML
 			int possible = text.Length - n + 1;
 			Dictionary<string, int> dict = new(capacity: Math.Max(val1: 4, val2: possible), comparer: StringComparer.Ordinal);
 
-			// Keine direkten UI-�nderungen hier (laufen im UI-Thread). Nur Progress melden.
+			// Keine direkten UI-Änderungen hier (laufen im UI-Thread). Nur Progress melden.
 			for (int i = 0; i < possible; i++)
 			{
-				// Abbruchpr�fung im hei�en Loop
+				// Abbruchprüfung im heißen Loop
 				if (backgroundWorker?.CancellationPending == true)
 				{
-					// fr�hzeitig abbrechen und aktuellen Zwischenstand zur�ckgeben
+					// frühzeitig abbrechen und aktuellen Zwischenstand zurückgeben
 					return dict;
 				}
 
@@ -39,7 +39,7 @@ namespace GraML
 			return dict;
 		}
 
-		// K�mmert sich ausschlie�lich um die UI-Anzeige der berechneten Kennzahlen
+		// Kümmert sich ausschließlich um die UI-Anzeige der berechneten Kennzahlen
 		private void UpdateNgramProperties(Dictionary<string, int> dict, int n)
 		{
 			if (dict == null || dict.Count == 0)
@@ -99,6 +99,9 @@ namespace GraML
 			listViewProperties.Items.Add(value: item);
 		}
 
+		private Dictionary<string, int>? ngramCounts;
+		private int n;
+
 		public MainForm()
 		{
 			InitializeComponent();
@@ -117,14 +120,14 @@ namespace GraML
 				progressBar.Value = 0;
 				labelProgressPercent.Text = "0 %";
 
-				// Dateiinhalt und n als Argument an den BackgroundWorker �bergeben
+				// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
 				backgroundWorker.RunWorkerAsync(argument: (fileContent, n));
 			}
 		}
 
 		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			// Nur Hintergrundarbeit: Parsen der Argumente und Z�hl-Logik ausf�hren
+			// Nur Hintergrundarbeit: Parsen der Argumente und Zähl-Logik ausführen
 			if (e.Argument is not ValueTuple<string, int> args)
 			{
 				e.Result = null;
@@ -136,7 +139,7 @@ namespace GraML
 
 			using BackgroundWorker? worker = sender as BackgroundWorker;
 
-			// CPU-intensive Arbeit im Hintergrund (CountNgrams pr�ft CancellationPending)
+			// CPU-intensive Arbeit im Hintergrund (CountNgrams prüft CancellationPending)
 			Dictionary<string, int> ngramCounts = CountNgrams(
 				text: textSpan,
 				n: n,
@@ -144,7 +147,7 @@ namespace GraML
 				backgroundWorker: worker!,
 				labelProgress: labelProgressPercent);
 
-			// Wenn w�hrend der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
+			// Wenn während der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
 			if (worker?.CancellationPending == true)
 			{
 				e.Cancel = true;
@@ -152,13 +155,13 @@ namespace GraML
 				return;
 			}
 
-			// Ergebnis an den UI-Thread zur�ckgeben
+			// Ergebnis an den UI-Thread zurückgeben
 			e.Result = (ngramCounts, n);
 		}
 
 		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
-			// ProgressChanged l�uft auf dem UI-Thread � sichere UI-Aktualisierung
+			// ProgressChanged läuft auf dem UI-Thread — sichere UI-Aktualisierung
 			int percent = Math.Clamp(value: e.ProgressPercentage, min: 0, max: 100);
 			progressBar.Value = percent;
 			labelProgressPercent.Text = $"{percent} %";
@@ -175,7 +178,7 @@ namespace GraML
 
 			if (e.Cancelled)
 			{
-				// Abbruch: R�cksetzen UI / Info
+				// Abbruch: Rücksetzen UI / Info
 				labelProgressPercent.Text = "Cancelled";
 				progressBar.Value = 0;
 				return;
@@ -186,8 +189,8 @@ namespace GraML
 				return;
 			}
 
-			Dictionary<string, int> ngramCounts = result.Item1;
-			int n = result.Item2;
+			ngramCounts = result.Item1;
+			n = result.Item2;
 
 			// UI-Updates auf dem UI-Thread
 			listViewNgram.Items.Clear();
@@ -198,7 +201,7 @@ namespace GraML
 				listViewNgram.Items.Add(value: item);
 			}
 
-			// UI-�bersicht aktualisieren
+			// UI-Übersicht aktualisieren
 			UpdateNgramProperties(dict: ngramCounts, n: n);
 
 			// finalen Progress anzeigen
@@ -218,6 +221,178 @@ namespace GraML
 
 		private void ButtonCreateModelText_Click(object sender, EventArgs e)
 		{
+			if (ngramCounts == null || n <= 0)
+			{
+				MessageBox.Show("Please open a file first and calculate the N-grams.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+			string model = GenerateModelText(ngramCounts, n: n, length: (int)numericUpDownModelTextLength.Value);
+			textBoxModelText.Text = model;
+		}
+
+		// Generiert Modelltext basierend auf den gezählten N‑Grams.
+		// - n: Größe der N‑Gramme (muss mit den Keys in ngramCounts übereinstimmen).
+		// - length: gewünschte Länge des Ausgabetexts in Zeichen.
+		// - rng: optional für reproduzierbare Ergebnisse.
+		private string GenerateModelText(Dictionary<string, int> ngramCounts, int n, int length, Random? rng = null)
+		{
+			if (ngramCounts == null || ngramCounts.Count == 0 || n <= 0 || length <= 0)
+			{
+				return string.Empty;
+			}
+
+			rng ??= new Random();
+
+			// Hilfsfunktion: gewichtete Auswahl aus (keys, weights)
+			static char WeightedPick(char[] choices, int[] cumWeights, int total, Random rngLocal)
+			{
+				int r = rngLocal.Next(total);
+				int idx = Array.BinarySearch(cumWeights, r);
+				if (idx < 0)
+				{
+					idx = ~idx;
+				}
+
+				if (idx >= choices.Length)
+				{
+					idx = choices.Length - 1;
+				}
+
+				return choices[idx];
+			}
+
+			// Fall n == 1: einfache gewichtete Auswahl auf einzelnen Zeichen
+			if (n == 1)
+			{
+				List<char> chars = new();
+				List<int> cum = new();
+				int total = 0;
+				foreach (var kv in ngramCounts)
+				{
+					if (string.IsNullOrEmpty(kv.Key))
+					{
+						continue;
+					}
+
+					char c = kv.Key[0];
+					total += kv.Value;
+					chars.Add(c);
+					cum.Add(total);
+				}
+				if (chars.Count == 0)
+				{
+					return string.Empty;
+				}
+
+				var sb1 = new System.Text.StringBuilder(length);
+				for (int i = 0; i < length; i++)
+				{
+					sb1.Append(WeightedPick(chars.ToArray(), cum.ToArray(), total, rng));
+				}
+
+				return sb1.ToString();
+			}
+
+			// Allgemeiner Fall n >= 2
+			// Baue Mapping: prefix (n-1 chars) -> (choices[], cumulativeWeights[], total)
+			var prefixBuckets = new Dictionary<string, Dictionary<char, int>>(StringComparer.Ordinal);
+			int globalTotal = 0;
+
+			foreach (var kv in ngramCounts)
+			{
+				string gram = kv.Key;
+				if (gram == null || gram.Length != n)
+				{
+					continue;
+				}
+
+				string prefix = gram[..(n - 1)];
+				char next = gram[n - 1];
+
+				if (!prefixBuckets.TryGetValue(prefix, out var inner))
+				{
+					inner = new Dictionary<char, int>();
+					prefixBuckets[prefix] = inner;
+				}
+
+				inner[next] = inner.TryGetValue(next, out int cnt) ? cnt + kv.Value : kv.Value;
+
+				globalTotal += kv.Value;
+			}
+
+			if (prefixBuckets.Count == 0)
+			{
+				return string.Empty;
+			}
+
+			// Wandle inner dictionaries in arrays (choices + cumulative weights)
+			var prefixMap = new Dictionary<string, (char[] choices, int[] cumWeights, int total)>(StringComparer.Ordinal);
+			foreach (var p in prefixBuckets)
+			{
+				var choices = p.Value.Keys.ToArray();
+				var weights = p.Value.Values.ToArray();
+				int[] cum = new int[weights.Length];
+				int sum = 0;
+				for (int i = 0; i < weights.Length; i++)
+				{
+					sum += weights[i];
+					cum[i] = sum;
+				}
+				prefixMap[p.Key] = (choices, cum, sum);
+			}
+
+			// Wähle Startprefix: gewichteter Pick über alle N‑Gramme (nach Häufigkeit)
+			int rstart = rng.Next(globalTotal);
+			int acc = 0;
+			string startPrefix = prefixMap.Keys.First(); // fallback
+			foreach (var kv in ngramCounts)
+			{
+				if (kv.Key == null || kv.Key.Length != n)
+				{
+					continue;
+				}
+
+				acc += kv.Value;
+				if (acc > rstart)
+				{
+					startPrefix = kv.Key[..(n - 1)];
+					break;
+				}
+			}
+
+			var sb = new System.Text.StringBuilder(length);
+			// initial: füge Startprefix bei
+			sb.Append(startPrefix);
+
+			// Generiere weiter, bis gewünschte Länge erreicht oder kein Übergang mehr existiert
+			while (sb.Length < length)
+			{
+				string curPrefix = sb.Length >= (n - 1)
+					? sb.ToString(sb.Length - (n - 1), n - 1)
+					: sb.ToString(); // sollte normalerweise nicht nötig
+
+				if (!prefixMap.TryGetValue(curPrefix, out var bucket))
+				{
+					// Kein passender Übergang: wähle zufällig einen existierenden Prefix neu
+					// (vermeidet frühes Abbrechen)
+					var keys = prefixMap.Keys.ToArray();
+					curPrefix = keys[rng.Next(keys.Length)];
+					sb.Append(curPrefix); // kann len erhöhen; prüfe dann beim nächsten Loop
+					if (sb.Length >= length)
+					{
+						break;
+					}
+
+					continue;
+				}
+
+				char next = WeightedPick(bucket.choices, bucket.cumWeights, bucket.total, rng);
+				sb.Append(next);
+				// slide window automatisch durch sb; loop setzt curPrefix beim nächsten Durchlauf neu
+			}
+
+			// Falls länger als gewünscht, trimmen
+			return sb.Length > length ? sb.ToString(0, length) : sb.ToString();
 		}
 	}
 }
