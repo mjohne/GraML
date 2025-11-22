@@ -367,25 +367,6 @@ namespace GraML
 			}
 		}
 
-		// Aktiviert VirtualMode und legt die Länge fest
-		private void EnableVirtualListViewForTokens(KeyValuePair<string, int>[] tokens)
-		{
-			listViewToken.BeginUpdate();
-			try
-			{
-				// detach/attach sichert gegen doppelte Events
-				listViewToken.RetrieveVirtualItem -= ListViewToken_RetrieveVirtualItem;
-				tokenArray = tokens ?? [];
-				listViewToken.VirtualMode = true;
-				listViewToken.VirtualListSize = tokenArray.Length;
-				listViewToken.RetrieveVirtualItem += ListViewToken_RetrieveVirtualItem;
-			}
-			finally
-			{
-				listViewToken.EndUpdate();
-			}
-		}
-
 		#endregion
 
 		#region Constructor
@@ -521,7 +502,7 @@ namespace GraML
 			labelProgressPercent.Text = $"{percent} %";
 		}
 
-		private async System.Threading.Tasks.Task PopulateListViewTokenInBatches(KeyValuePair<string, int>[] tokens, int batchSize = 500)
+		private async Task PopulateListViewTokenInBatches(KeyValuePair<string, int>[] tokens, int batchSize = 500)
 		{
 			if (tokens == null || tokens.Length == 0)
 			{
@@ -534,25 +515,25 @@ namespace GraML
 				int total = tokens.Length;
 				for (int i = 0; i < total; i += batchSize)
 				{
-					int take = Math.Min(batchSize, total - i);
-					var items = new List<ListViewItem>(take);
+					int take = Math.Min(val1: batchSize, val2: total - i);
+					List<ListViewItem> items = new(capacity: take);
 					for (int j = 0; j < take; j++)
 					{
-						var kv = tokens[i + j];
-						var item = new ListViewItem(kv.Key);
-						item.SubItems.Add(kv.Value.ToString());
+						KeyValuePair<string, int> kv = tokens[i + j];
+						ListViewItem item = new(text: kv.Key);
+						item.SubItems.Add(text: kv.Value.ToString());
 						items.Add(item);
 					}
 
-					listViewToken.Items.AddRange(items.ToArray());
+					listViewToken.Items.AddRange(items: [.. items]);
 
 					// Aktualisiere Fortschritt sichtbar, UI bleibt responsiv
-					int progress = (int)Math.Clamp((i + take) * 100L / total, 0, 100);
+					int progress = (int)Math.Clamp(value: (i + take) * 100L / total, min: 0, max: 100);
 					progressBar.Value = progress;
 					labelProgressPercent.Text = $"{progress} %";
 
 					// Gib UI-Thread die Chance, Eingaben zu verarbeiten
-					await System.Threading.Tasks.Task.Yield();
+					await Task.Yield();
 				}
 			}
 			finally
