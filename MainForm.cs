@@ -84,28 +84,35 @@ namespace GraML
 			AddProperty(name: "Total unique n-grams", value: $"{unique}");
 			AddProperty(name: "Total n-grams", value: $"{total}");
 			AddProperty(name: "Proportion of unique n-grams", value: $"{unique / (double)total:F4}");
-			AddProperty(name: "Most frequent n-gram", value: $"{most.Key} ({most.Value} occurrences)");
-			AddProperty(name: "Least frequent n-gram", value: $"{least.Key} ({least.Value} occurrences)");
 			AddProperty(name: "Average frequency of n-grams", value: $"{average:F4}");
 			AddProperty(name: "Median frequency of n-grams", value: $"{median:F4}");
-			AddProperty(name: "Mode frequency of n-grams", value: $"{dict.Values.GroupBy(keySelector: v => v).OrderByDescending(keySelector: g => g.Count()).First().Key}");
 			AddProperty(name: "Standard deviation of n-gram frequencies", value: $"{Math.Sqrt(d: dict.Values.Average(selector: v => Math.Pow(x: v - average, y: 2))):F4}");
 			AddProperty(name: "Variance of n-gram frequencies", value: $"{dict.Values.Average(selector: v => Math.Pow(x: v - average, y: 2)):F4}");
 			AddProperty(name: "Range of n-gram frequencies", value: $"{dict.Values.Max() - dict.Values.Min()}");
 			AddProperty(name: "Count of n-grams with frequency 1", value: $"{dict.Values.Count(predicate: v => v == 1)}");
 			AddProperty(name: "Count of n-grams with frequency greater than average", value: $"{dict.Values.Count(predicate: v => v > average)}");
 			AddProperty(name: "Count of n-grams with frequency less than average", value: $"{dict.Values.Count(predicate: v => v < average)}");
-			AddProperty(name: "Top 5 most frequent n-grams", value: string.Join(separator: ", ", values: dict.OrderByDescending(keySelector: kv => kv.Value).Take(count: 5).Select(selector: kv => $"{kv.Key} ({kv.Value})")));
-			AddProperty(name: "Top 5 least frequent n-grams", value: string.Join(separator: ", ", values: dict.OrderBy(keySelector: kv => kv.Value).Take(count: 5).Select(selector: kv => $"{kv.Key} ({kv.Value})")));
 			AddProperty(name: "Frequency distribution of n-grams", value: string.Join(separator: ", ", values: dict.GroupBy(keySelector: kv => kv.Value).OrderBy(keySelector: g => g.Key).Select(selector: g => $"{g.Key}: {g.Count()}")));
 			AddProperty(name: "Entropy of n-gram distribution", value: $"{entropy:F4}");
 			AddProperty(name: "Gini coefficient of n-gram distribution", value: $"{gini:F4}");
-			AddProperty(name: "Average length of n-grams", value: $"{dict.Keys.Average(selector: k => k.Length):F2}");
+			AddProperty(name: "Yule's K Measure", value: $"{10000 * (dict.Values.Sum(selector: v => v * v) - dict.Values.Sum()) / (double)(total * total):F4}");
+			AddProperty(name: "Normalized Entropy", value: $"{entropy / Math.Log2(x: dict.Count):F4}");
 			AddProperty(name: "Hapax Legomena (occurring once)", value: $"{dict.Values.Count(predicate: v => v == 1)}");
 			AddProperty(name: "Dis Legomena (occurring twice)", value: $"{dict.Values.Count(predicate: v => v == 2)}");
+			AddProperty(name: "Tris Legomena (occurring thrice)", value: $"{dict.Values.Count(predicate: v => v == 3)}");
+			AddProperty(name: "Tetrakis Legomena (occurring four times)", value: $"{dict.Values.Count(predicate: v => v == 4)}");
+			AddProperty(name: "Pentakis Legomena (occurring five times)", value: $"{dict.Values.Count(predicate: v => v == 5)}");
+			AddProperty(name: "Hexakis Legomena (occurring six times)", value: $"{dict.Values.Count(predicate: v => v == 6)}");
 			AddProperty(name: "Ratio of Hapax Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 1) / (double)total:F4}");
-			//AddProperty(name: "Yule's K Measure", value: $"{10000 * (dict.Values.Sum(selector: v => v * v) - dict.Values.Sum()) / (double)(total * total):F4}");
-			AddProperty(name: "Normalized Entropy", value: $"{entropy / Math.Log2(x: dict.Count):F4}");
+			AddProperty(name: "Ratio of Dis Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 2) / (double)total:F4}");
+			AddProperty(name: "Ratio of Tris Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 3) / (double)total:F4}");
+			AddProperty(name: "Ratio of Tetrakis Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 4) / (double)total:F4}");
+			AddProperty(name: "Ratio of Pentakis Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 5) / (double)total:F4}");
+			AddProperty(name: "Ratio of Hexakis Legomena to total", value: $"{dict.Values.Count(predicate: v => v == 6) / (double)total:F4}");
+			AddProperty(name: "Most frequent n-gram", value: $"{most.Key} ({most.Value} occurrences)");
+			AddProperty(name: "Least frequent n-gram", value: $"{least.Key} ({least.Value} occurrences)");
+			AddProperty(name: "Top 5 most frequent n-grams", value: string.Join(separator: ", ", values: dict.OrderByDescending(keySelector: kv => kv.Value).Take(count: 5).Select(selector: kv => $"{kv.Key} ({kv.Value})")));
+			AddProperty(name: "Top 5 least frequent n-grams", value: string.Join(separator: ", ", values: dict.OrderBy(keySelector: kv => kv.Value).Take(count: 5).Select(selector: kv => $"{kv.Key} ({kv.Value})")));
 		}
 
 		private void AddProperty(string name, string value)
