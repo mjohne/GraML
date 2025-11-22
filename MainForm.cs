@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Text;
+using System.Text.Json;
 
 namespace GraML
 {
@@ -360,6 +361,65 @@ namespace GraML
 			{
 				File.WriteAllText(path: path, contents: content, encoding: new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
 				MessageBox.Show(text: $"Model text saved: {path}", caption: "Export completed", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(text: ex.Message, caption: "Error saving", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
+			}
+		}
+
+		// Fügen Sie eine statische, wiederverwendbare Instanz von JsonSerializerOptions hinzu
+		private static readonly JsonSerializerOptions SharedJsonOptions = new() { WriteIndented = true };
+
+		private void SaveMetricsToJson(string? path = null)
+		{
+			// Keine Metriken -> nichts tun
+			if (listViewMetrics.Items.Count == 0)
+			{
+				MessageBox.Show(text: "No metrics to export.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
+				return;
+			}
+
+			// Falls kein Pfad übergeben wurde, SaveFileDialog anzeigen
+			if (string.IsNullOrEmpty(value: path))
+			{
+				using SaveFileDialog sfd = new();
+				sfd.Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*";
+				sfd.FileName = string.IsNullOrEmpty(value: filePath) ? "metrics.json" : $"{Path.GetFileNameWithoutExtension(path: filePath)}_metrics.json";
+				if (sfd.ShowDialog(owner: this) != DialogResult.OK)
+				{
+					return;
+				}
+
+				path = sfd.FileName;
+			}
+
+			// Metriken aus listViewMetrics extrahieren
+			List<Dictionary<string, string>> metricsList = new(capacity: listViewMetrics.Items.Count);
+			foreach (ListViewItem item in listViewMetrics.Items)
+			{
+				string name = item.Text ?? string.Empty;
+				string value = item.SubItems.Count > 1 ? item.SubItems[index: 1].Text ?? string.Empty : string.Empty;
+				metricsList.Add(item: new Dictionary<string, string> { { "name", name }, { "value", value } });
+			}
+
+			// Export-Objekt mit Metadaten
+			Dictionary<string, object?> export = new()
+			{
+				{ "file", string.IsNullOrEmpty(value: filePath) ? null : Path.GetFileName(path: filePath) },
+				{ "filePath", string.IsNullOrEmpty(value: filePath) ? null : filePath },
+				{ "n", n },
+				{ "generatedAtUtc", DateTime.UtcNow.ToString(format: "o") },
+				{ "metrics", metricsList }
+			};
+
+			// Serialisieren und speichern (UTF-8 mit BOM für Kompatibilität)
+			string json = JsonSerializer.Serialize(value: export, options: SharedJsonOptions);
+
+			try
+			{
+				File.WriteAllText(path: path, contents: json, encoding: new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+				MessageBox.Show(text: $"Metrics saved: {path}", caption: "Export completed", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Information);
 			}
 			catch (Exception ex)
 			{
