@@ -367,8 +367,6 @@ namespace GraML
 				MessageBox.Show(text: ex.Message, caption: "Error saving", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
 			}
 		}
-
-		// Fügen Sie eine statische, wiederverwendbare Instanz von JsonSerializerOptions hinzu
 		private static readonly JsonSerializerOptions SharedJsonOptions = new() { WriteIndented = true };
 
 		private void SaveMetricsToJson(string? path = null)
@@ -383,15 +381,12 @@ namespace GraML
 			// Falls kein Pfad übergeben wurde, SaveFileDialog anzeigen
 			if (string.IsNullOrEmpty(value: path))
 			{
-				using SaveFileDialog sfd = new();
-				sfd.Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*";
-				sfd.FileName = string.IsNullOrEmpty(value: filePath) ? "metrics.json" : $"{Path.GetFileNameWithoutExtension(path: filePath)}_metrics.json";
-				if (sfd.ShowDialog(owner: this) != DialogResult.OK)
+				if (saveFileDialogMetrics.ShowDialog(owner: this) != DialogResult.OK)
 				{
 					return;
 				}
 
-				path = sfd.FileName;
+				path = saveFileDialogMetrics.FileName;
 			}
 
 			// Metriken aus listViewMetrics extrahieren
@@ -516,6 +511,11 @@ namespace GraML
 		private void ButtonSaveModelText_Click(object sender, EventArgs e)
 		{
 			SaveModelTextToFile();
+		}
+
+		private void ButtonSaveMetricsAsJsonFile_Click(object sender, EventArgs e)
+		{
+			SaveMetricsToJson();
 		}
 
 		#endregion
