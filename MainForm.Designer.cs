@@ -38,7 +38,6 @@
 			listViewMetrics = new ListView();
 			columnHeaderMetrics = new ColumnHeader();
 			columnHeaderValue = new ColumnHeader();
-			backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			progressBar = new ProgressBar();
 			labelProgressPercent = new Label();
 			labelNgramLength = new Label();
@@ -152,14 +151,6 @@
 			// 
 			columnHeaderValue.Text = "Values";
 			columnHeaderValue.Width = 150;
-			// 
-			// backgroundWorker
-			// 
-			backgroundWorker.WorkerReportsProgress = true;
-			backgroundWorker.WorkerSupportsCancellation = true;
-			backgroundWorker.DoWork += BackgroundWorker_DoWork;
-			backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
-			backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
 			// 
 			// progressBar
 			// 
@@ -467,7 +458,6 @@
 		private ListView listViewMetrics;
 		private ColumnHeader columnHeaderMetrics;
 		private ColumnHeader columnHeaderValue;
-		private System.ComponentModel.BackgroundWorker backgroundWorker;
 		private ProgressBar progressBar;
 		private Label labelProgressPercent;
 		private Label labelNgramLength;

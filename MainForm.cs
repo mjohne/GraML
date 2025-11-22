@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 
 namespace GraML
@@ -21,12 +20,15 @@ namespace GraML
 
 		private string fileContent = string.Empty;
 
+		// CancellationTokenSource für die Task-basierte Variante
+		private CancellationTokenSource? _cts;
+
 		#endregion
 
 		#region Helpers
 
-		// Sequenzielle Variante (bestehend) — belassen, falls du sie weiterhin brauchst.
-		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, BackgroundWorker backgroundWorker)
+		// Sequenzielle Variante, jetzt Task-freundlich: CancellationToken + IProgress<int>
+		private static Dictionary<string, int> CountNgrams(ReadOnlySpan<char> text, int n, CancellationToken ct, IProgress<int>? progress)
 		{
 			if (n <= 0 || text.Length < n)
 			{
@@ -38,18 +40,15 @@ namespace GraML
 
 			for (int i = 0; i < possible; i++)
 			{
-				if (backgroundWorker?.CancellationPending == true)
-				{
-					return dict;
-				}
+				ct.ThrowIfCancellationRequested();
 
 				string token = new(value: text.Slice(start: i, length: n));
 				dict[key: token] = dict.TryGetValue(key: token, value: out int cnt) ? cnt + 1 : 1;
 
-				if (backgroundWorker != null && backgroundWorker.WorkerReportsProgress)
+				if (progress != null)
 				{
 					int percent = (int)((i + 1) * 100L / possible);
-					backgroundWorker.ReportProgress(percentProgress: percent);
+					progress.Report(percent);
 				}
 			}
 
@@ -462,8 +461,9 @@ namespace GraML
 			}
 		}
 
-		private void ButtonBuildTokenList_Click(object sender, EventArgs e)
+		private async void ButtonBuildTokenList_Click(object sender, EventArgs e)
 		{
+			// Vorbereitung UI
 			groupBoxProgress.Enabled = true;
 			groupBoxModelText.Enabled = false;
 			groupBoxTokenFrequency.Enabled = false;
@@ -473,16 +473,74 @@ namespace GraML
 			progressBar.Value = 0;
 			labelProgressPercent.Text = "0 %";
 
-			// Dateiinhalt und n als Argument an den BackgroundWorker übergeben
-			backgroundWorker.RunWorkerAsync(argument: (fileContent, (int)numericUpDownNGram.Value));
+			if (string.IsNullOrEmpty(value: fileContent))
+			{
+				MessageBox.Show(text: "No file loaded.", caption: "Warning", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Warning);
+				return;
+			}
+
+			// Cancel vorheriger Aufgabe
+			_cts?.Cancel();
+			_cts = new CancellationTokenSource();
+
+			var progress = new Progress<int>(p =>
+			{
+				int percent = Math.Clamp(value: p, min: 0, max: 100);
+				progressBar.Value = percent;
+				labelProgressPercent.Text = $"{percent} %";
+			});
+
+			int nLocal = (int)numericUpDownNGram.Value;
+
+			try
+			{
+				// Zählarbeit in Hintergrund-Task
+				var result = await Task.Run(() => CountNgrams(fileContent.AsSpan(), nLocal, _cts.Token, progress), _cts.Token);
+
+				// Abbruch geprüft
+				_cts.Token.ThrowIfCancellationRequested();
+
+				ngramCounts = result;
+				n = nLocal;
+				groupBoxModelText.Enabled = true;
+				groupBoxTokenFrequency.Enabled = true;
+				groupBoxMetrics.Enabled = true;
+
+				// Sortieren (optional) und asynchron in Batches hinzufügen
+				KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
+				await PopulateListViewTokenInBatches(tokens: tokens, batchSize: 500);
+
+				// UI-Übersicht aktualisieren
+				UpdateNgramProperties(dict: ngramCounts, n: n);
+
+				// finalen Progress anzeigen
+				progressBar.Value = 100;
+				labelProgressPercent.Text = "100 %";
+			}
+			catch (OperationCanceledException)
+			{
+				// Abbruchbehandlung
+				labelProgressPercent.Text = "Cancelled";
+				progressBar.Value = 0;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(text: ex.Message, caption: "Error", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
+			}
+			finally
+			{
+				_cts?.Dispose();
+				_cts = null;
+				groupBoxProgress.Enabled = false;
+			}
 		}
 
 		private void ButtonCancel_Click(object sender, EventArgs e)
 		{
-			// Button zum Abbruch (Button in Designer an diesen Handler binden)
-			if (backgroundWorker.IsBusy && backgroundWorker.WorkerSupportsCancellation)
+			// Button zum Abbruch
+			if (_cts != null && !_cts.IsCancellationRequested)
 			{
-				backgroundWorker.CancelAsync();
+				_cts.Cancel();
 				labelProgressPercent.Text = "Abort request...";
 			}
 		}
@@ -520,47 +578,13 @@ namespace GraML
 
 		#endregion
 
-		#region BackgroundWorker Handlers
+		#region BackgroundWorker Handlers (removed - replaced by Task)
 
-		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-		{
-			// Nur Hintergrundarbeit: Parsen der Argumente und Zähl-Logik ausführen
-			if (e.Argument is not ValueTuple<string, int> args)
-			{
-				e.Result = null;
-				return;
-			}
+		// BackgroundWorker handlers removed — replaced by Task-based flow.
 
-			(string fileContent, int n) = args;
-			ReadOnlySpan<char> textSpan = fileContent.AsSpan();
+		#endregion
 
-			using BackgroundWorker? worker = sender as BackgroundWorker;
-
-			// CPU-intensive Arbeit im Hintergrund (CountNgrams prüft CancellationPending)
-			Dictionary<string, int> ngramCounts = CountNgrams(
-				text: textSpan,
-				n: n,
-				backgroundWorker: worker!);
-
-			// Wenn während der Arbeit Abbruch angefordert wurde, markieren wir das Ergebnis als abgebrochen
-			if (worker?.CancellationPending == true)
-			{
-				e.Cancel = true;
-				e.Result = null;
-				return;
-			}
-
-			// Ergebnis an den UI-Thread zurückgeben
-			e.Result = (ngramCounts, n);
-		}
-
-		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-		{
-			// ProgressChanged läuft auf dem UI-Thread — sichere UI-Aktualisierung
-			int percent = Math.Clamp(value: e.ProgressPercentage, min: 0, max: 100);
-			progressBar.Value = percent;
-			labelProgressPercent.Text = $"{percent} %";
-		}
+		#region Misc Async Helpers
 
 		private async Task PopulateListViewTokenInBatches(KeyValuePair<string, int>[] tokens, int batchSize = 500)
 		{
@@ -600,46 +624,6 @@ namespace GraML
 			{
 				listViewToken.EndUpdate();
 			}
-		}
-
-		private async void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
-			// Fehlerbehandlung
-			if (e.Error != null)
-			{
-				MessageBox.Show(text: e.Error.Message, caption: "Error", buttons: MessageBoxButtons.OK, icon: MessageBoxIcon.Error);
-				return;
-			}
-
-			if (e.Cancelled)
-			{
-				// Abbruch: Rücksetzen UI / Info
-				labelProgressPercent.Text = "Cancelled";
-				progressBar.Value = 0;
-				return;
-			}
-
-			if (e.Result is not ValueTuple<Dictionary<string, int>, int> result || result.Item1 == null)
-			{
-				return;
-			}
-
-			ngramCounts = result.Item1;
-			n = result.Item2;
-			groupBoxModelText.Enabled = true;
-			groupBoxTokenFrequency.Enabled = true;
-			groupBoxMetrics.Enabled = true;
-
-			// Sortieren (optional) und asynchron in Batches hinzufügen
-			KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
-			await PopulateListViewTokenInBatches(tokens: tokens, batchSize: 500);
-
-			// UI-Übersicht aktualisieren
-			UpdateNgramProperties(dict: ngramCounts, n: n);
-
-			// finalen Progress anzeigen
-			progressBar.Value = 100;
-			labelProgressPercent.Text = "100 %";
 		}
 
 		#endregion
