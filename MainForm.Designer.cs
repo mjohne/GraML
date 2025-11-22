@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			components = new System.ComponentModel.Container();
 			buttonSelectTextFile = new Button();
 			openFileDialog = new OpenFileDialog();
 			listViewToken = new ListView();
@@ -59,6 +60,7 @@
 			buttonSaveAsTextFile = new Button();
 			saveFileDialogTokenList = new SaveFileDialog();
 			saveFileDialogModelText = new SaveFileDialog();
+			toolTip = new ToolTip(components);
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			((System.ComponentModel.ISupportInitialize)numericUpDownModelTextLength).BeginInit();
 			groupBoxTextFile.SuspendLayout();
@@ -71,6 +73,7 @@
 			// 
 			// buttonSelectTextFile
 			// 
+			buttonSelectTextFile.AutoEllipsis = true;
 			buttonSelectTextFile.Location = new Point(520, 22);
 			buttonSelectTextFile.Name = "buttonSelectTextFile";
 			buttonSelectTextFile.Size = new Size(115, 23);
@@ -201,6 +204,7 @@
 			// 
 			// buttonCreateModelText
 			// 
+			buttonCreateModelText.AutoEllipsis = true;
 			buttonCreateModelText.Location = new Point(200, 22);
 			buttonCreateModelText.Name = "buttonCreateModelText";
 			buttonCreateModelText.Size = new Size(137, 23);
@@ -211,6 +215,7 @@
 			// 
 			// buttonCancel
 			// 
+			buttonCancel.AutoEllipsis = true;
 			buttonCancel.Location = new Point(246, 15);
 			buttonCancel.Name = "buttonCancel";
 			buttonCancel.Size = new Size(115, 23);
@@ -273,6 +278,7 @@
 			// 
 			// buttonRebuild
 			// 
+			buttonRebuild.AutoEllipsis = true;
 			buttonRebuild.Location = new Point(156, 15);
 			buttonRebuild.Name = "buttonRebuild";
 			buttonRebuild.Size = new Size(106, 23);
@@ -307,6 +313,7 @@
 			// 
 			// buttonSaveTokenListAsCsv
 			// 
+			buttonSaveTokenListAsCsv.AutoEllipsis = true;
 			buttonSaveTokenListAsCsv.Location = new Point(6, 216);
 			buttonSaveTokenListAsCsv.Name = "buttonSaveTokenListAsCsv";
 			buttonSaveTokenListAsCsv.Size = new Size(163, 23);
@@ -341,6 +348,7 @@
 			// 
 			// buttonSaveAsTextFile
 			// 
+			buttonSaveAsTextFile.AutoEllipsis = true;
 			buttonSaveAsTextFile.Location = new Point(343, 22);
 			buttonSaveAsTextFile.Name = "buttonSaveAsTextFile";
 			buttonSaveAsTextFile.Size = new Size(126, 23);
@@ -425,5 +433,6 @@
 		private Button buttonSaveAsTextFile;
 		private SaveFileDialog saveFileDialogTokenList;
 		private SaveFileDialog saveFileDialogModelText;
+		private ToolTip toolTip;
 	}
 }
