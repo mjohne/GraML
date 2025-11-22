@@ -593,23 +593,24 @@ namespace GraML
 				for (int i = 0; i < total; i += batchSize)
 				{
 					int take = Math.Min(val1: batchSize, val2: total - i);
-					List<ListViewItem> items = new(capacity: take);
+					ListViewItem[] items = new ListViewItem[take];
 					for (int j = 0; j < take; j++)
 					{
 						KeyValuePair<string, int> kv = tokens[i + j];
 						ListViewItem item = new(text: kv.Key);
 						item.SubItems.Add(text: kv.Value.ToString());
-						items.Add(item);
+						items[j] = item;
 					}
 
-					listViewToken.Items.AddRange(items: [.. items]);
+					// Füge Batch als Array ein (weniger Allokationen als List.ToArray())
+					listViewToken.Items.AddRange(items: items);
 
-					// Aktualisiere Fortschritt sichtbar, UI bleibt responsiv
+					// Aktualisiere sichtbaren Fortschritt; UI bleibt responsiv
 					int progress = (int)Math.Clamp(value: (i + take) * 100L / total, min: 0, max: 100);
 					progressBar.Value = progress;
 					labelProgressPercent.Text = $"{progress} %";
 
-					// Gib UI-Thread die Chance, Eingaben zu verarbeiten
+					// kurze Yield, damit die UI auf Eingaben reagieren kann
 					await Task.Yield();
 				}
 			}
