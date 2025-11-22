@@ -56,11 +56,13 @@
 			groupBoxTokenFrequency = new GroupBox();
 			buttonSaveTokenListAsCsv = new Button();
 			groupBoxMetrics = new GroupBox();
+			buttonSaveMetricsAsJsonFile = new Button();
 			groupBoxModelText = new GroupBox();
 			buttonSaveAsTextFile = new Button();
 			saveFileDialogTokenList = new SaveFileDialog();
 			saveFileDialogModelText = new SaveFileDialog();
 			toolTip = new ToolTip(components);
+			saveFileDialogMetrics = new SaveFileDialog();
 			((System.ComponentModel.ISupportInitialize)numericUpDownNGram).BeginInit();
 			((System.ComponentModel.ISupportInitialize)numericUpDownModelTextLength).BeginInit();
 			groupBoxTextFile.SuspendLayout();
@@ -135,7 +137,7 @@
 			listViewMetrics.MultiSelect = false;
 			listViewMetrics.Name = "listViewMetrics";
 			listViewMetrics.ShowItemToolTips = true;
-			listViewMetrics.Size = new Size(446, 217);
+			listViewMetrics.Size = new Size(446, 188);
 			listViewMetrics.TabIndex = 0;
 			toolTip.SetToolTip(listViewMetrics, "Metrics");
 			listViewMetrics.UseCompatibleStateImageBehavior = false;
@@ -356,6 +358,7 @@
 			// groupBoxMetrics
 			// 
 			groupBoxMetrics.AccessibleRole = AccessibleRole.Grouping;
+			groupBoxMetrics.Controls.Add(buttonSaveMetricsAsJsonFile);
 			groupBoxMetrics.Controls.Add(listViewMetrics);
 			groupBoxMetrics.Location = new Point(195, 128);
 			groupBoxMetrics.Name = "groupBoxMetrics";
@@ -363,6 +366,18 @@
 			groupBoxMetrics.TabIndex = 4;
 			groupBoxMetrics.TabStop = false;
 			groupBoxMetrics.Text = "&Metrics";
+			// 
+			// buttonSaveMetricsAsJsonFile
+			// 
+			buttonSaveMetricsAsJsonFile.AccessibleRole = AccessibleRole.PushButton;
+			buttonSaveMetricsAsJsonFile.AutoEllipsis = true;
+			buttonSaveMetricsAsJsonFile.Location = new Point(6, 216);
+			buttonSaveMetricsAsJsonFile.Name = "buttonSaveMetricsAsJsonFile";
+			buttonSaveMetricsAsJsonFile.Size = new Size(148, 23);
+			buttonSaveMetricsAsJsonFile.TabIndex = 1;
+			buttonSaveMetricsAsJsonFile.Text = "Save as &JSON file";
+			buttonSaveMetricsAsJsonFile.UseVisualStyleBackColor = true;
+			buttonSaveMetricsAsJsonFile.Click += ButtonSaveMetricsAsJsonFile_Click;
 			// 
 			// groupBoxModelText
 			// 
@@ -402,6 +417,12 @@
 			saveFileDialogModelText.DefaultExt = "txt";
 			saveFileDialogModelText.Filter = "text files|*.txt|all files|*.*";
 			saveFileDialogModelText.OkRequiresInteraction = true;
+			// 
+			// saveFileDialogMetrics
+			// 
+			saveFileDialogMetrics.DefaultExt = "json";
+			saveFileDialogMetrics.Filter = "JSON Files (*.json)|*.json|All Files (*.*)|*.*";
+			saveFileDialogMetrics.OkRequiresInteraction = true;
 			// 
 			// MainForm
 			// 
@@ -469,5 +490,7 @@
 		private SaveFileDialog saveFileDialogTokenList;
 		private SaveFileDialog saveFileDialogModelText;
 		private ToolTip toolTip;
+		private Button buttonSaveMetricsAsJsonFile;
+		private SaveFileDialog saveFileDialogMetrics;
 	}
 }
