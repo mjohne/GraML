@@ -8,7 +8,7 @@ namespace GraML
 		#region Variables
 
 		// Feld zum Speichern der Token als Array für VirtualMode
-		private KeyValuePair<string, int>[] tokenArray = [];
+		private readonly KeyValuePair<string, int>[] tokenArray = [];
 
 		private Dictionary<string, int>? ngramCounts;
 
@@ -263,21 +263,29 @@ namespace GraML
 					? sb.ToString(startIndex: sb.Length - (n - 1), length: n - 1)
 					: sb.ToString(); // sollte normalerweise nicht nötig
 
+				// MainForm.cs
 				if (!prefixMap.TryGetValue(key: curPrefix, value: out (char[] choices, int[] cumWeights, int total) bucket))
 				{
 					// Kein passender Übergang: wähle zufällig einen existierenden Prefix neu
-					// (vermeidet frühes Abbrechen)
+					// Alternative Variante: Ersetze die letzten (n-1) Zeichen des aktuellen Fensters durch das neue Prefix.
 					string[] keys = [.. prefixMap.Keys];
-					curPrefix = keys[rng.Next(maxValue: keys.Length)];
-					sb.Append(value: curPrefix); // kann Länge erhöhen; prüfe dann beim nächsten Loop
-					if (sb.Length >= length)
+					string newPrefix = keys[rng.Next(maxValue: keys.Length)];
+
+					if (sb.Length >= (n - 1))
 					{
-						break;
+						// entferne das alte Fenster und füge das neue Prefix ein
+						sb.Remove(startIndex: sb.Length - (n - 1), length: n - 1);
+						sb.Append(value: newPrefix);
+					}
+					else
+					{
+						// Falls String zu kurz ist, hänge einfach das neue Prefix an
+						sb.Append(value: newPrefix);
 					}
 
+					// weiter generieren (kein zusätzliches append hier)
 					continue;
 				}
-
 				char next = WeightedPick(bucket.choices, bucket.cumWeights, bucket.total, rngLocal: rng);
 				sb.Append(value: next);
 				// slide window automatisch durch sb; loop setzt curPrefix beim nächsten Durchlauf neu
