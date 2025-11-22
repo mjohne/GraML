@@ -98,7 +98,7 @@
 			listViewToken.MultiSelect = false;
 			listViewToken.Name = "listViewToken";
 			listViewToken.ShowItemToolTips = true;
-			listViewToken.Size = new Size(163, 188);
+			listViewToken.Size = new Size(165, 188);
 			listViewToken.TabIndex = 0;
 			toolTip.SetToolTip(listViewToken, "Token frequency");
 			listViewToken.UseCompatibleStateImageBehavior = false;
@@ -347,7 +347,7 @@
 			buttonSaveTokenListAsCsv.AutoEllipsis = true;
 			buttonSaveTokenListAsCsv.Location = new Point(6, 216);
 			buttonSaveTokenListAsCsv.Name = "buttonSaveTokenListAsCsv";
-			buttonSaveTokenListAsCsv.Size = new Size(163, 23);
+			buttonSaveTokenListAsCsv.Size = new Size(165, 23);
 			buttonSaveTokenListAsCsv.TabIndex = 1;
 			buttonSaveTokenListAsCsv.Text = "Save as &CSV file";
 			buttonSaveTokenListAsCsv.UseVisualStyleBackColor = true;
