@@ -35,8 +35,8 @@
 			columnHeaderToken = new ColumnHeader();
 			columnHeaderFrequency = new ColumnHeader();
 			numericUpDownNGram = new NumericUpDown();
-			listViewProperties = new ListView();
-			columnHeaderProperty = new ColumnHeader();
+			listViewMetrics = new ListView();
+			columnHeaderMetrics = new ColumnHeader();
 			columnHeaderValue = new ColumnHeader();
 			backgroundWorker = new System.ComponentModel.BackgroundWorker();
 			progressBar = new ProgressBar();
@@ -44,18 +44,18 @@
 			labelNgramLength = new Label();
 			labelProgress = new Label();
 			textBoxModelText = new TextBox();
-			buttonCreateModelText = new Button();
+			buttonGenerateModelText = new Button();
 			buttonCancel = new Button();
 			labelModelTextLength = new Label();
 			numericUpDownModelTextLength = new NumericUpDown();
 			groupBoxTextFile = new GroupBox();
 			textBoxTextFilePath = new TextBox();
 			groupBoxNgram = new GroupBox();
-			buttonRebuild = new Button();
+			buttonBuildTokenList = new Button();
 			groupBoxProgress = new GroupBox();
 			groupBoxTokenFrequency = new GroupBox();
 			buttonSaveTokenListAsCsv = new Button();
-			groupBoxProperties = new GroupBox();
+			groupBoxMetrics = new GroupBox();
 			groupBoxModelText = new GroupBox();
 			buttonSaveAsTextFile = new Button();
 			saveFileDialogTokenList = new SaveFileDialog();
@@ -67,18 +67,19 @@
 			groupBoxNgram.SuspendLayout();
 			groupBoxProgress.SuspendLayout();
 			groupBoxTokenFrequency.SuspendLayout();
-			groupBoxProperties.SuspendLayout();
+			groupBoxMetrics.SuspendLayout();
 			groupBoxModelText.SuspendLayout();
 			SuspendLayout();
 			// 
 			// buttonSelectTextFile
 			// 
+			buttonSelectTextFile.AccessibleRole = AccessibleRole.PushButton;
 			buttonSelectTextFile.AutoEllipsis = true;
 			buttonSelectTextFile.Location = new Point(520, 22);
 			buttonSelectTextFile.Name = "buttonSelectTextFile";
 			buttonSelectTextFile.Size = new Size(115, 23);
 			buttonSelectTextFile.TabIndex = 1;
-			buttonSelectTextFile.Text = "Select text file";
+			buttonSelectTextFile.Text = "Se&lect text file";
 			buttonSelectTextFile.UseVisualStyleBackColor = true;
 			buttonSelectTextFile.Click += ButtonSelectTextFile_Click;
 			// 
@@ -90,6 +91,7 @@
 			// 
 			// listViewToken
 			// 
+			listViewToken.AccessibleRole = AccessibleRole.List;
 			listViewToken.Columns.AddRange(new ColumnHeader[] { columnHeaderToken, columnHeaderFrequency });
 			listViewToken.FullRowSelect = true;
 			listViewToken.Location = new Point(6, 22);
@@ -98,6 +100,7 @@
 			listViewToken.ShowItemToolTips = true;
 			listViewToken.Size = new Size(163, 188);
 			listViewToken.TabIndex = 0;
+			toolTip.SetToolTip(listViewToken, "Token frequency");
 			listViewToken.UseCompatibleStateImageBehavior = false;
 			listViewToken.View = View.Details;
 			// 
@@ -113,31 +116,35 @@
 			// 
 			// numericUpDownNGram
 			// 
+			numericUpDownNGram.AccessibleRole = AccessibleRole.SpinButton;
 			numericUpDownNGram.Location = new Point(99, 15);
 			numericUpDownNGram.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
 			numericUpDownNGram.Name = "numericUpDownNGram";
 			numericUpDownNGram.Size = new Size(51, 23);
 			numericUpDownNGram.TabIndex = 1;
 			numericUpDownNGram.TextAlign = HorizontalAlignment.Center;
+			toolTip.SetToolTip(numericUpDownNGram, "n-gram length");
 			numericUpDownNGram.Value = new decimal(new int[] { 3, 0, 0, 0 });
 			// 
-			// listViewProperties
+			// listViewMetrics
 			// 
-			listViewProperties.Columns.AddRange(new ColumnHeader[] { columnHeaderProperty, columnHeaderValue });
-			listViewProperties.FullRowSelect = true;
-			listViewProperties.Location = new Point(6, 22);
-			listViewProperties.MultiSelect = false;
-			listViewProperties.Name = "listViewProperties";
-			listViewProperties.ShowItemToolTips = true;
-			listViewProperties.Size = new Size(446, 217);
-			listViewProperties.TabIndex = 0;
-			listViewProperties.UseCompatibleStateImageBehavior = false;
-			listViewProperties.View = View.Details;
+			listViewMetrics.AccessibleRole = AccessibleRole.List;
+			listViewMetrics.Columns.AddRange(new ColumnHeader[] { columnHeaderMetrics, columnHeaderValue });
+			listViewMetrics.FullRowSelect = true;
+			listViewMetrics.Location = new Point(6, 22);
+			listViewMetrics.MultiSelect = false;
+			listViewMetrics.Name = "listViewMetrics";
+			listViewMetrics.ShowItemToolTips = true;
+			listViewMetrics.Size = new Size(446, 217);
+			listViewMetrics.TabIndex = 0;
+			toolTip.SetToolTip(listViewMetrics, "Metrics");
+			listViewMetrics.UseCompatibleStateImageBehavior = false;
+			listViewMetrics.View = View.Details;
 			// 
-			// columnHeaderProperty
+			// columnHeaderMetrics
 			// 
-			columnHeaderProperty.Text = "Properties";
-			columnHeaderProperty.Width = 300;
+			columnHeaderMetrics.Text = "Metrics";
+			columnHeaderMetrics.Width = 300;
 			// 
 			// columnHeaderValue
 			// 
@@ -154,15 +161,18 @@
 			// 
 			// progressBar
 			// 
+			progressBar.AccessibleRole = AccessibleRole.ProgressBar;
 			progressBar.Location = new Point(67, 15);
 			progressBar.Name = "progressBar";
 			progressBar.Size = new Size(105, 23);
 			progressBar.Step = 1;
 			progressBar.Style = ProgressBarStyle.Continuous;
 			progressBar.TabIndex = 1;
+			toolTip.SetToolTip(progressBar, "progress bar");
 			// 
 			// labelProgressPercent
 			// 
+			labelProgressPercent.AccessibleRole = AccessibleRole.StaticText;
 			labelProgressPercent.AutoEllipsis = true;
 			labelProgressPercent.AutoSize = true;
 			labelProgressPercent.Location = new Point(178, 19);
@@ -170,29 +180,35 @@
 			labelProgressPercent.Size = new Size(17, 15);
 			labelProgressPercent.TabIndex = 2;
 			labelProgressPercent.Text = "%";
+			toolTip.SetToolTip(labelProgressPercent, "progress in percent (%)");
 			// 
 			// labelNgramLength
 			// 
+			labelNgramLength.AccessibleRole = AccessibleRole.StaticText;
 			labelNgramLength.AutoEllipsis = true;
 			labelNgramLength.AutoSize = true;
 			labelNgramLength.Location = new Point(6, 19);
 			labelNgramLength.Name = "labelNgramLength";
 			labelNgramLength.Size = new Size(87, 15);
 			labelNgramLength.TabIndex = 0;
-			labelNgramLength.Text = "n-gram length:";
+			labelNgramLength.Text = "n-&gram length:";
+			toolTip.SetToolTip(labelNgramLength, "n-gram length");
 			// 
 			// labelProgress
 			// 
+			labelProgress.AccessibleRole = AccessibleRole.StaticText;
 			labelProgress.AutoEllipsis = true;
 			labelProgress.AutoSize = true;
 			labelProgress.Location = new Point(6, 19);
 			labelProgress.Name = "labelProgress";
 			labelProgress.Size = new Size(55, 15);
 			labelProgress.TabIndex = 0;
-			labelProgress.Text = "progress:";
+			labelProgress.Text = "pro&gress:";
+			toolTip.SetToolTip(labelProgress, "progress");
 			// 
 			// textBoxModelText
 			// 
+			textBoxModelText.AccessibleRole = AccessibleRole.Text;
 			textBoxModelText.Location = new Point(6, 51);
 			textBoxModelText.MaxLength = int.MaxValue;
 			textBoxModelText.Multiline = true;
@@ -201,51 +217,59 @@
 			textBoxModelText.ScrollBars = ScrollBars.Vertical;
 			textBoxModelText.Size = new Size(629, 210);
 			textBoxModelText.TabIndex = 4;
+			toolTip.SetToolTip(textBoxModelText, "Generated model text");
 			// 
-			// buttonCreateModelText
+			// buttonGenerateModelText
 			// 
-			buttonCreateModelText.AutoEllipsis = true;
-			buttonCreateModelText.Location = new Point(200, 22);
-			buttonCreateModelText.Name = "buttonCreateModelText";
-			buttonCreateModelText.Size = new Size(137, 23);
-			buttonCreateModelText.TabIndex = 2;
-			buttonCreateModelText.Text = "Create model text";
-			buttonCreateModelText.UseVisualStyleBackColor = true;
-			buttonCreateModelText.Click += ButtonCreateModelText_Click;
+			buttonGenerateModelText.AccessibleRole = AccessibleRole.PushButton;
+			buttonGenerateModelText.AutoEllipsis = true;
+			buttonGenerateModelText.Location = new Point(200, 22);
+			buttonGenerateModelText.Name = "buttonGenerateModelText";
+			buttonGenerateModelText.Size = new Size(137, 23);
+			buttonGenerateModelText.TabIndex = 2;
+			buttonGenerateModelText.Text = "Gene&rate model text";
+			buttonGenerateModelText.UseVisualStyleBackColor = true;
+			buttonGenerateModelText.Click += ButtonGenerateModelText_Click;
 			// 
 			// buttonCancel
 			// 
+			buttonCancel.AccessibleRole = AccessibleRole.PushButton;
 			buttonCancel.AutoEllipsis = true;
 			buttonCancel.Location = new Point(246, 15);
 			buttonCancel.Name = "buttonCancel";
 			buttonCancel.Size = new Size(115, 23);
 			buttonCancel.TabIndex = 3;
-			buttonCancel.Text = "Cancel progress";
+			buttonCancel.Text = "&Cancel progress";
 			buttonCancel.UseVisualStyleBackColor = true;
 			buttonCancel.Click += ButtonCancel_Click;
 			// 
 			// labelModelTextLength
 			// 
+			labelModelTextLength.AccessibleRole = AccessibleRole.StaticText;
 			labelModelTextLength.AutoEllipsis = true;
 			labelModelTextLength.AutoSize = true;
 			labelModelTextLength.Location = new Point(6, 25);
 			labelModelTextLength.Name = "labelModelTextLength";
 			labelModelTextLength.Size = new Size(67, 15);
 			labelModelTextLength.TabIndex = 0;
-			labelModelTextLength.Text = "text length:";
+			labelModelTextLength.Text = "text &length:";
+			toolTip.SetToolTip(labelModelTextLength, "text length");
 			// 
 			// numericUpDownModelTextLength
 			// 
+			numericUpDownModelTextLength.AccessibleRole = AccessibleRole.SpinButton;
 			numericUpDownModelTextLength.Location = new Point(79, 22);
 			numericUpDownModelTextLength.Maximum = new decimal(new int[] { int.MaxValue, 0, 0, 0 });
 			numericUpDownModelTextLength.Name = "numericUpDownModelTextLength";
 			numericUpDownModelTextLength.Size = new Size(115, 23);
 			numericUpDownModelTextLength.TabIndex = 1;
 			numericUpDownModelTextLength.TextAlign = HorizontalAlignment.Center;
+			toolTip.SetToolTip(numericUpDownModelTextLength, "length of the model text");
 			numericUpDownModelTextLength.Value = new decimal(new int[] { 100000, 0, 0, 0 });
 			// 
 			// groupBoxTextFile
 			// 
+			groupBoxTextFile.AccessibleRole = AccessibleRole.Grouping;
 			groupBoxTextFile.Controls.Add(textBoxTextFilePath);
 			groupBoxTextFile.Controls.Add(buttonSelectTextFile);
 			groupBoxTextFile.Location = new Point(12, 12);
@@ -253,20 +277,23 @@
 			groupBoxTextFile.Size = new Size(641, 59);
 			groupBoxTextFile.TabIndex = 0;
 			groupBoxTextFile.TabStop = false;
-			groupBoxTextFile.Text = "Select text file";
+			groupBoxTextFile.Text = "&Select text file";
 			// 
 			// textBoxTextFilePath
 			// 
+			textBoxTextFilePath.AccessibleRole = AccessibleRole.Text;
 			textBoxTextFilePath.Location = new Point(6, 22);
 			textBoxTextFilePath.Name = "textBoxTextFilePath";
 			textBoxTextFilePath.PlaceholderText = "Select a text file...";
 			textBoxTextFilePath.ReadOnly = true;
 			textBoxTextFilePath.Size = new Size(508, 23);
 			textBoxTextFilePath.TabIndex = 0;
+			toolTip.SetToolTip(textBoxTextFilePath, "file path and name");
 			// 
 			// groupBoxNgram
 			// 
-			groupBoxNgram.Controls.Add(buttonRebuild);
+			groupBoxNgram.AccessibleRole = AccessibleRole.Grouping;
+			groupBoxNgram.Controls.Add(buttonBuildTokenList);
 			groupBoxNgram.Controls.Add(numericUpDownNGram);
 			groupBoxNgram.Controls.Add(labelNgramLength);
 			groupBoxNgram.Location = new Point(12, 77);
@@ -274,21 +301,23 @@
 			groupBoxNgram.Size = new Size(268, 45);
 			groupBoxNgram.TabIndex = 1;
 			groupBoxNgram.TabStop = false;
-			groupBoxNgram.Text = "N-gram";
+			groupBoxNgram.Text = "&N-gram";
 			// 
-			// buttonRebuild
+			// buttonBuildTokenList
 			// 
-			buttonRebuild.AutoEllipsis = true;
-			buttonRebuild.Location = new Point(156, 15);
-			buttonRebuild.Name = "buttonRebuild";
-			buttonRebuild.Size = new Size(106, 23);
-			buttonRebuild.TabIndex = 2;
-			buttonRebuild.Text = "Rebuild token list";
-			buttonRebuild.UseVisualStyleBackColor = true;
-			buttonRebuild.Click += ButtonRebuildTokenList_Click;
+			buttonBuildTokenList.AccessibleRole = AccessibleRole.PushButton;
+			buttonBuildTokenList.AutoEllipsis = true;
+			buttonBuildTokenList.Location = new Point(156, 15);
+			buttonBuildTokenList.Name = "buttonBuildTokenList";
+			buttonBuildTokenList.Size = new Size(106, 23);
+			buttonBuildTokenList.TabIndex = 2;
+			buttonBuildTokenList.Text = "&Build token list";
+			buttonBuildTokenList.UseVisualStyleBackColor = true;
+			buttonBuildTokenList.Click += ButtonBuildTokenList_Click;
 			// 
 			// groupBoxProgress
 			// 
+			groupBoxProgress.AccessibleRole = AccessibleRole.Grouping;
 			groupBoxProgress.Controls.Add(progressBar);
 			groupBoxProgress.Controls.Add(labelProgressPercent);
 			groupBoxProgress.Controls.Add(labelProgress);
@@ -298,10 +327,11 @@
 			groupBoxProgress.Size = new Size(367, 45);
 			groupBoxProgress.TabIndex = 2;
 			groupBoxProgress.TabStop = false;
-			groupBoxProgress.Text = "Progress";
+			groupBoxProgress.Text = "&Progress";
 			// 
 			// groupBoxTokenFrequency
 			// 
+			groupBoxTokenFrequency.AccessibleRole = AccessibleRole.Grouping;
 			groupBoxTokenFrequency.Controls.Add(buttonSaveTokenListAsCsv);
 			groupBoxTokenFrequency.Controls.Add(listViewToken);
 			groupBoxTokenFrequency.Location = new Point(12, 128);
@@ -309,51 +339,55 @@
 			groupBoxTokenFrequency.Size = new Size(177, 245);
 			groupBoxTokenFrequency.TabIndex = 3;
 			groupBoxTokenFrequency.TabStop = false;
-			groupBoxTokenFrequency.Text = "Token Frequency";
+			groupBoxTokenFrequency.Text = "&Token Frequency";
 			// 
 			// buttonSaveTokenListAsCsv
 			// 
+			buttonSaveTokenListAsCsv.AccessibleRole = AccessibleRole.PushButton;
 			buttonSaveTokenListAsCsv.AutoEllipsis = true;
 			buttonSaveTokenListAsCsv.Location = new Point(6, 216);
 			buttonSaveTokenListAsCsv.Name = "buttonSaveTokenListAsCsv";
 			buttonSaveTokenListAsCsv.Size = new Size(163, 23);
 			buttonSaveTokenListAsCsv.TabIndex = 1;
-			buttonSaveTokenListAsCsv.Text = "Save as CSV";
+			buttonSaveTokenListAsCsv.Text = "Save as &CSV file";
 			buttonSaveTokenListAsCsv.UseVisualStyleBackColor = true;
 			buttonSaveTokenListAsCsv.Click += ButtonSaveTokenListAsCsv_Click;
 			// 
-			// groupBoxProperties
+			// groupBoxMetrics
 			// 
-			groupBoxProperties.Controls.Add(listViewProperties);
-			groupBoxProperties.Location = new Point(195, 128);
-			groupBoxProperties.Name = "groupBoxProperties";
-			groupBoxProperties.Size = new Size(458, 245);
-			groupBoxProperties.TabIndex = 4;
-			groupBoxProperties.TabStop = false;
-			groupBoxProperties.Text = "Properties";
+			groupBoxMetrics.AccessibleRole = AccessibleRole.Grouping;
+			groupBoxMetrics.Controls.Add(listViewMetrics);
+			groupBoxMetrics.Location = new Point(195, 128);
+			groupBoxMetrics.Name = "groupBoxMetrics";
+			groupBoxMetrics.Size = new Size(458, 245);
+			groupBoxMetrics.TabIndex = 4;
+			groupBoxMetrics.TabStop = false;
+			groupBoxMetrics.Text = "&Metrics";
 			// 
 			// groupBoxModelText
 			// 
+			groupBoxModelText.AccessibleRole = AccessibleRole.Grouping;
 			groupBoxModelText.Controls.Add(buttonSaveAsTextFile);
 			groupBoxModelText.Controls.Add(textBoxModelText);
 			groupBoxModelText.Controls.Add(labelModelTextLength);
 			groupBoxModelText.Controls.Add(numericUpDownModelTextLength);
-			groupBoxModelText.Controls.Add(buttonCreateModelText);
+			groupBoxModelText.Controls.Add(buttonGenerateModelText);
 			groupBoxModelText.Location = new Point(12, 379);
 			groupBoxModelText.Name = "groupBoxModelText";
 			groupBoxModelText.Size = new Size(641, 267);
 			groupBoxModelText.TabIndex = 5;
 			groupBoxModelText.TabStop = false;
-			groupBoxModelText.Text = "Model text";
+			groupBoxModelText.Text = "Mo&del text";
 			// 
 			// buttonSaveAsTextFile
 			// 
+			buttonSaveAsTextFile.AccessibleRole = AccessibleRole.PushButton;
 			buttonSaveAsTextFile.AutoEllipsis = true;
 			buttonSaveAsTextFile.Location = new Point(343, 22);
 			buttonSaveAsTextFile.Name = "buttonSaveAsTextFile";
 			buttonSaveAsTextFile.Size = new Size(126, 23);
 			buttonSaveAsTextFile.TabIndex = 3;
-			buttonSaveAsTextFile.Text = "Save as text file";
+			buttonSaveAsTextFile.Text = "Save as text &file";
 			buttonSaveAsTextFile.UseVisualStyleBackColor = true;
 			buttonSaveAsTextFile.Click += ButtonSaveModelText_Click;
 			// 
@@ -371,11 +405,12 @@
 			// 
 			// MainForm
 			// 
+			AccessibleRole = AccessibleRole.Window;
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(665, 658);
 			Controls.Add(groupBoxModelText);
-			Controls.Add(groupBoxProperties);
+			Controls.Add(groupBoxMetrics);
 			Controls.Add(groupBoxTokenFrequency);
 			Controls.Add(groupBoxProgress);
 			Controls.Add(groupBoxNgram);
@@ -394,7 +429,7 @@
 			groupBoxProgress.ResumeLayout(false);
 			groupBoxProgress.PerformLayout();
 			groupBoxTokenFrequency.ResumeLayout(false);
-			groupBoxProperties.ResumeLayout(false);
+			groupBoxMetrics.ResumeLayout(false);
 			groupBoxModelText.ResumeLayout(false);
 			groupBoxModelText.PerformLayout();
 			ResumeLayout(false);
@@ -408,8 +443,8 @@
 		private ColumnHeader columnHeaderToken;
 		private ColumnHeader columnHeaderFrequency;
 		private NumericUpDown numericUpDownNGram;
-		private ListView listViewProperties;
-		private ColumnHeader columnHeaderProperty;
+		private ListView listViewMetrics;
+		private ColumnHeader columnHeaderMetrics;
 		private ColumnHeader columnHeaderValue;
 		private System.ComponentModel.BackgroundWorker backgroundWorker;
 		private ProgressBar progressBar;
@@ -417,7 +452,7 @@
 		private Label labelNgramLength;
 		private Label labelProgress;
 		private TextBox textBoxModelText;
-		private Button buttonCreateModelText;
+		private Button buttonGenerateModelText;
 		private Button buttonCancel;
 		private Label labelModelTextLength;
 		private NumericUpDown numericUpDownModelTextLength;
@@ -426,8 +461,8 @@
 		private GroupBox groupBoxNgram;
 		private GroupBox groupBoxProgress;
 		private GroupBox groupBoxTokenFrequency;
-		private GroupBox groupBoxProperties;
-		private Button buttonRebuild;
+		private GroupBox groupBoxMetrics;
+		private Button buttonBuildTokenList;
 		private Button buttonSaveTokenListAsCsv;
 		private GroupBox groupBoxModelText;
 		private Button buttonSaveAsTextFile;

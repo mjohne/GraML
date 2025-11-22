@@ -112,7 +112,7 @@ namespace GraML
 		{
 			ListViewItem item = new(text: name);
 			item.SubItems.Add(text: value);
-			listViewProperties.Items.Add(value: item);
+			listViewMetrics.Items.Add(value: item);
 		}
 
 		// Generiert Modelltext basierend auf den gezählten N‑Grams.
@@ -397,7 +397,7 @@ namespace GraML
 			groupBoxNgram.Enabled = false;
 			groupBoxProgress.Enabled = false;
 			groupBoxTokenFrequency.Enabled = false;
-			groupBoxProperties.Enabled = false;
+			groupBoxMetrics.Enabled = false;
 			groupBoxModelText.Enabled = false;
 		}
 
@@ -419,14 +419,14 @@ namespace GraML
 			}
 		}
 
-		private void ButtonRebuildTokenList_Click(object sender, EventArgs e)
+		private void ButtonBuildTokenList_Click(object sender, EventArgs e)
 		{
 			groupBoxProgress.Enabled = true;
 			groupBoxModelText.Enabled = false;
 			groupBoxTokenFrequency.Enabled = false;
-			groupBoxProperties.Enabled = false;
+			groupBoxMetrics.Enabled = false;
 			listViewToken.Items.Clear();
-			listViewProperties.Items.Clear();
+			listViewMetrics.Items.Clear();
 			progressBar.Value = 0;
 			labelProgressPercent.Text = "0 %";
 
@@ -444,7 +444,7 @@ namespace GraML
 			}
 		}
 
-		private void ButtonCreateModelText_Click(object sender, EventArgs e)
+		private void ButtonGenerateModelText_Click(object sender, EventArgs e)
 		{
 			if (ngramCounts == null || n <= 0)
 			{
@@ -540,7 +540,7 @@ namespace GraML
 			n = result.Item2;
 			groupBoxModelText.Enabled = true;
 			groupBoxTokenFrequency.Enabled = true;
-			groupBoxProperties.Enabled = true;
+			groupBoxMetrics.Enabled = true;
 
 			// Sortiere optional (z. B. absteigend nach Häufigkeit) und setze VirtualMode
 			KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
