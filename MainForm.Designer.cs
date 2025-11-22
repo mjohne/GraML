@@ -191,7 +191,7 @@
 			labelNgramLength.Name = "labelNgramLength";
 			labelNgramLength.Size = new Size(87, 15);
 			labelNgramLength.TabIndex = 0;
-			labelNgramLength.Text = "n-&gram length:";
+			labelNgramLength.Text = "n-gra&m length:";
 			toolTip.SetToolTip(labelNgramLength, "n-gram length");
 			// 
 			// labelProgress
@@ -252,7 +252,7 @@
 			labelModelTextLength.Name = "labelModelTextLength";
 			labelModelTextLength.Size = new Size(67, 15);
 			labelModelTextLength.TabIndex = 0;
-			labelModelTextLength.Text = "text &length:";
+			labelModelTextLength.Text = "text lengt&h:";
 			toolTip.SetToolTip(labelModelTextLength, "text length");
 			// 
 			// numericUpDownModelTextLength
