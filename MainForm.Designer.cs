@@ -87,7 +87,7 @@
 			// openFileDialog
 			// 
 			openFileDialog.DefaultExt = "txt";
-			openFileDialog.Filter = "text files|*.txt|all files|*.*";
+			openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
 			openFileDialog.OkRequiresInteraction = true;
 			// 
 			// listViewToken
@@ -400,13 +400,13 @@
 			// saveFileDialogTokenList
 			// 
 			saveFileDialogTokenList.DefaultExt = "csv";
-			saveFileDialogTokenList.Filter = "CSV files|*.csv|all files|*.*";
+			saveFileDialogTokenList.Filter = "CSV Files (*.csv)|*.csv|All Files (*.*)|*.*";
 			saveFileDialogTokenList.OkRequiresInteraction = true;
 			// 
 			// saveFileDialogModelText
 			// 
 			saveFileDialogModelText.DefaultExt = "txt";
-			saveFileDialogModelText.Filter = "text files|*.txt|all files|*.*";
+			saveFileDialogModelText.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
 			saveFileDialogModelText.OkRequiresInteraction = true;
 			// 
 			// saveFileDialogMetrics

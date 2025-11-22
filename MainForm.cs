@@ -48,7 +48,7 @@ namespace GraML
 				if (progress != null)
 				{
 					int percent = (int)((i + 1) * 100L / possible);
-					progress.Report(percent);
+					progress.Report(value: percent);
 				}
 			}
 
@@ -449,7 +449,6 @@ namespace GraML
 
 		private void ButtonSelectTextFile_Click(object sender, EventArgs e)
 		{
-			openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
 			if (openFileDialog.ShowDialog(owner: this) == DialogResult.OK)
 			{
 				filePath = openFileDialog.FileName;
@@ -483,7 +482,7 @@ namespace GraML
 			_cts?.Cancel();
 			_cts = new CancellationTokenSource();
 
-			var progress = new Progress<int>(p =>
+			Progress<int> progress = new(handler: p =>
 			{
 				int percent = Math.Clamp(value: p, min: 0, max: 100);
 				progressBar.Value = percent;
@@ -495,7 +494,7 @@ namespace GraML
 			try
 			{
 				// Zählarbeit in Hintergrund-Task
-				var result = await Task.Run(() => CountNgrams(fileContent.AsSpan(), nLocal, _cts.Token, progress), _cts.Token);
+				Dictionary<string, int> result = await Task.Run(function: () => CountNgrams(text: fileContent.AsSpan(), n: nLocal, ct: _cts.Token, progress: progress), cancellationToken: _cts.Token);
 
 				// Abbruch geprüft
 				_cts.Token.ThrowIfCancellationRequested();
@@ -575,12 +574,6 @@ namespace GraML
 		{
 			SaveMetricsToJson();
 		}
-
-		#endregion
-
-		#region BackgroundWorker Handlers (removed - replaced by Task)
-
-		// BackgroundWorker handlers removed — replaced by Task-based flow.
 
 		#endregion
 
