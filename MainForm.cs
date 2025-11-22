@@ -521,7 +521,47 @@ namespace GraML
 			labelProgressPercent.Text = $"{percent} %";
 		}
 
-		private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+		private async System.Threading.Tasks.Task PopulateListViewTokenInBatches(KeyValuePair<string, int>[] tokens, int batchSize = 500)
+		{
+			if (tokens == null || tokens.Length == 0)
+			{
+				return;
+			}
+
+			listViewToken.BeginUpdate();
+			try
+			{
+				int total = tokens.Length;
+				for (int i = 0; i < total; i += batchSize)
+				{
+					int take = Math.Min(batchSize, total - i);
+					var items = new List<ListViewItem>(take);
+					for (int j = 0; j < take; j++)
+					{
+						var kv = tokens[i + j];
+						var item = new ListViewItem(kv.Key);
+						item.SubItems.Add(kv.Value.ToString());
+						items.Add(item);
+					}
+
+					listViewToken.Items.AddRange(items.ToArray());
+
+					// Aktualisiere Fortschritt sichtbar, UI bleibt responsiv
+					int progress = (int)Math.Clamp((i + take) * 100L / total, 0, 100);
+					progressBar.Value = progress;
+					labelProgressPercent.Text = $"{progress} %";
+
+					// Gib UI-Thread die Chance, Eingaben zu verarbeiten
+					await System.Threading.Tasks.Task.Yield();
+				}
+			}
+			finally
+			{
+				listViewToken.EndUpdate();
+			}
+		}
+
+		private async void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
 			// Fehlerbehandlung
 			if (e.Error != null)
@@ -549,9 +589,9 @@ namespace GraML
 			groupBoxTokenFrequency.Enabled = true;
 			groupBoxMetrics.Enabled = true;
 
-			// Sortiere optional (z. B. absteigend nach Häufigkeit) und setze VirtualMode
+			// Sortieren (optional) und asynchron in Batches hinzufügen
 			KeyValuePair<string, int>[] tokens = [.. ngramCounts.OrderByDescending(keySelector: static kv => kv.Value)];
-			EnableVirtualListViewForTokens(tokens: tokens);
+			await PopulateListViewTokenInBatches(tokens: tokens, batchSize: 500);
 
 			// UI-Übersicht aktualisieren
 			UpdateNgramProperties(dict: ngramCounts, n: n);
