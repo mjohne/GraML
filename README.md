@@ -16,3 +16,5 @@ a tool for analyzing n-grams and generating text based on the n-gram models
 - The GUI may still freeze during prolonged processing, as the processing has not yet been optimized.
 - Handling of special characters is not yet adequate.
 - Beyond a certain n-gram length, repetitions of longer word sequences occur. This is due to a bug that has not yet been identified.
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=GraML)
